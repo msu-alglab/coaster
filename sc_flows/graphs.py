@@ -142,6 +142,50 @@ class AdjList:
     def in_degree(self, v):
         return len(self.in_neighborhood(v))
 
+    def fill_stack(self, v, visited, stack):
+        """Add verts to a stack only after visiting all out-neighbors.
+        For finding sccs."""
+        visited[v] = True
+        for u, _ in self.out_neighborhood(v):
+            if not visited[u]:
+                self.fill_stack(u, visited, stack)
+        stack.append(v)
+
+    def transpose(self):
+        """Return a copy of the graph with all edge directions reversed."""
+        res = self.copy()
+        res.adj_list = res.inverse_adj_list
+        return res
+
+    def dfs(self, v, visited):
+        """traverse graph using DFS. For finding sccs."""
+        visited[v] = True
+        print(v, end=" ")
+        for u, _ in self.out_neighborhood(v):
+            if not visited[u]:
+                self.dfs(u, visited)
+
+    def scc(self):
+        """
+        Return a copy of the graph in which all strongly connected components
+        are reduced to a single vertex, and a mapping from each vertex in the
+        scc graph back to the original graph.
+        """
+        # find SCCs using Kosaraju's algorithm
+        stack = []
+        visited = [False]*(max(self.vertices) + 1)
+        # start dfs at source
+        self.fill_stack(self.source(), visited, stack)
+        transpose = self.transpose()
+        visited = [False]*(max(self.vertices) + 1)
+        while stack:
+            v = stack.pop()
+            if not visited[v]:
+                transpose.dfs(v, visited)
+                print("")
+
+        return self, None
+
     def contracted(self):
         """
         Return a copy of the graph in which all uv arcs where u has out degree

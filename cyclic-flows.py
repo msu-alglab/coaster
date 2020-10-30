@@ -16,7 +16,7 @@ import sys
 from sc_flows.guess_weight import solve
 from sc_flows.parser import read_instances
 from sc_flows.flow import Instance
-from sc_flows.graphs import test_flow_cover
+# from sc_flows.graphs import test_flow_cover
 
 
 # Override error message to show help message instead
@@ -204,12 +204,14 @@ if __name__ == "__main__":
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
-        print("Contracted graph is")
-        reduced.print_out()
         # reduced is the graph after contractions;
         # mapping enables mapping paths on reduced back to paths in graph
         if args.print_contracted:
             reduced.print_out()
+
+        # create a graph with all strongly connected components contracted to
+        # single vertices
+        scc_reduced, scc_mapping = reduced.scc()
 
         n = len(reduced)
         m = len(list(reduced.edges()))
