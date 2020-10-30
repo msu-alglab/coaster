@@ -204,6 +204,8 @@ if __name__ == "__main__":
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
+        print("Contracted graph is")
+        reduced.print_out()
         # reduced is the graph after contractions;
         # mapping enables mapping paths on reduced back to paths in graph
         if args.print_contracted:
