@@ -532,10 +532,30 @@ class SolvedConstr:
         solution_paths_all = recover_paths(self.instance, self.path_weights)
         print("All solution paths")
         print(solution_paths_all)
-        # try to route over all cycles
-        print(self.instance.sccs)
-        for c in [x for x in self.instance.sccs if len(x) > 1]:
-            print(c)
+        for pathset in solution_paths_all:
+            for c in [x for x in self.instance.sccs if len(x) > 1]:
+                print("processing cycle", c)
+                v = c[0]
+                in_edges = self.instance.graph.in_arcs_lists[v]
+                in_nodes = [self.instance.cyclic_graph.arc_info[e]["destin"]
+                            for e in in_edges]
+                out_edges = self.instance.graph.out_arcs_lists[v]
+                out_nodes = [self.instance.cyclic_graph.arc_info[e]["start"]
+                             for e in out_edges]
+                paths_to_route = []
+                for path, weight in pathset:
+                    for i, edge in enumerate(path):
+                        if edge in in_edges:
+                            in_node = in_nodes[in_edges.index(edge)]
+                            edge = path[i + 1]
+                            out_node = out_nodes[out_edges.index(edge)]
+                            paths_to_route.append((path, in_node, out_node,
+                                                  weight))
+                            break
+                print("Paths to route over cycle (and in node, out node, and"
+                      " weight)")
+                print(paths_to_route)
+
 
         # convert contracted paths to full paths
         for solution_paths in solution_paths_all:
