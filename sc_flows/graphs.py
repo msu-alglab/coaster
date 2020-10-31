@@ -102,6 +102,11 @@ class AdjList:
         else:
             return []
 
+    def in_neighborhood_edge_ids(self, u):
+        in_neighb = self.in_neighborhood(u)
+        print(self.in_arcs_lists)
+        return None
+
     def remove_weight(self, weight, u, v):
         for (w, flow) in self.adj_list[u]:
             if w == v:
@@ -168,20 +173,21 @@ class AdjList:
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath
-        connected components."""
-        res = AdjList(len(sccs))
-        mapping = dict()
-        for i, scc in enumerate(sccs):
-            for v in scc:
-                mapping[v] = i
-        print("mapping is", mapping)
-        for i, scc in enumerate(sccs):
-            out_edges = [item for sublist in [self.out_neighborhood(v) for v in
-                                              scc] for item in sublist]
-            for edge in out_edges:
-                if i != mapping[edge[0]]:  # don't add edges inside sccs
-                    res.add_edge(i, mapping[edge[0]], edge[1])
-        return res, mapping
+        connected components.
+        The first node in each scc is kept.
+        """
+        res = self.copy()
+        for scc in sccs:
+            if len(scc) > 1:
+                v = scc[0]
+                out_neighbs = [x[0] for x in res.out_neighborhood(v)]
+                while len(set(out_neighbs) & set(scc)) > 0:
+                    out_arcs = res.out_arcs_lists[v]
+                    for arc in out_arcs:
+                        if res.arc_info[arc]["destin"] in scc:
+                            res.contract_edge(arc)
+                    out_neighbs = [x[0] for x in res.out_neighborhood(v)]
+        return res, sccs
 
     def scc(self):
         """
@@ -284,31 +290,33 @@ class AdjList:
         # and label b for the vertex to discard
         a, b = (u, v) if keep_source else (v, u)
 
-        # update out-neighbors of a
-        self.adj_list[a].extend(self.out_neighborhood(b))
-        self.out_arcs_lists[a].extend(self.out_arcs_lists[b])
-        # make out-neighbors of b point back to a
-        for lab, edge in zip(self.out_arcs(b), self.out_neighborhood(b)):
-            w, f = edge
-            i = self.inverse_adj_list[w].index((b, f))
-            self.arc_info[lab]["start"] = a
-            self.inverse_adj_list[w][i] = (a, f)
+        if a != b:
+            # update out-neighbors of a
+            self.adj_list[a].extend(self.out_neighborhood(b))
+            self.out_arcs_lists[a].extend(self.out_arcs_lists[b])
+            # make out-neighbors of b point back to a
+            for lab, edge in zip(self.out_arcs(b), self.out_neighborhood(b)):
+                w, f = edge
+                i = self.inverse_adj_list[w].index((b, f))
+                self.arc_info[lab]["start"] = a
+                self.inverse_adj_list[w][i] = (a, f)
 
-        # update in-neighbors of a
-        self.inverse_adj_list[a].extend(self.in_neighborhood(b))
-        self.in_arcs_lists[a].extend(self.in_arcs_lists[b])
-        # make in neighbors of b point to a
-        for lab, edge in zip(self.in_arcs(b), self.in_neighborhood(b)):
-            w, f = edge
-            i = self.adj_list[w].index((b, f))
-            self.arc_info[lab]["destin"] = a
-            self.adj_list[w][i] = (a, f)
+            # update in-neighbors of a
+            self.inverse_adj_list[a].extend(self.in_neighborhood(b))
+            self.in_arcs_lists[a].extend(self.in_arcs_lists[b])
+            # make in neighbors of b point to a
+            for lab, edge in zip(self.in_arcs(b), self.in_neighborhood(b)):
+                w, f = edge
+                i = self.adj_list[w].index((b, f))
+                self.arc_info[lab]["destin"] = a
+                self.adj_list[w][i] = (a, f)
 
-        if b in self.adj_list:
-            del self.adj_list[b]
-        if b in self.inverse_adj_list:
-            del self.inverse_adj_list[b]
-        self.vertices.remove(b)
+            if b in self.adj_list:
+                del self.adj_list[b]
+            if b in self.inverse_adj_list:
+                del self.inverse_adj_list[b]
+
+            self.vertices.remove(b)
         del self.arc_info[e]
 
     def reversed(self):

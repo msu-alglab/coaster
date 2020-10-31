@@ -24,7 +24,8 @@ class Instance:
     feasible path weights.
     """
 
-    def __init__(self, graph, k=None, node_mapping=None):
+    def __init__(self, graph, k=None, cyclic_graph=None,
+                 sccs=None):
         """Create an instance from a graph and guess for the solution size."""
         # information about the graph and its ordering
         self.graph = graph
@@ -46,9 +47,10 @@ class Instance:
         # compute bounds on the individual weights
         self.weight_bounds = self._compute_weight_bounds()
 
-        # node mapping indicates the mapping from nodes in the acyclic graph in
-        # self.graph to the (possibly cyclic) original graph
-        self.node_mapping = node_mapping
+        # cyclic_graph
+        self.cyclic_graph = cyclic_graph
+        # sccs in the original cyclic graph
+        self.sccs = sccs
 
     def info(self):
         """A string representation of this object."""
@@ -530,14 +532,11 @@ class SolvedConstr:
         solution_paths_all = recover_paths(self.instance, self.path_weights)
         print("All solution paths")
         print(solution_paths_all)
-        inv_mapping = defaultdict(list)
-        for k, v in self.instance.node_mapping.items():
-            inv_mapping[v].append(k)
-        cycle_nodes = [x for x in inv_mapping if
-                       len(inv_mapping[x]) > 1]
         # try to route over all cycles
-        for cycle_node in cycle_nodes:
-            pass
+        print(self.instance.sccs)
+        for c in [x for x in self.instance.sccs if len(x) > 1]:
+            print(c)
+
         # convert contracted paths to full paths
         for solution_paths in solution_paths_all:
             weight_vec = []

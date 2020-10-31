@@ -204,14 +204,20 @@ if __name__ == "__main__":
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
+        print("contraction mapping is,", mapping)
         # reduced is the graph after contractions;
         # mapping enables mapping paths on reduced back to paths in graph
         if args.print_contracted:
+            print("Contracted graph is:")
             reduced.print_out()
 
         # create a graph with all strongly connected components contracted to
         # single vertices
-        scc_reduced, scc_node_mapping = reduced.scc()
+        scc_reduced, sccs = reduced.scc()
+        if args.print_contracted:
+            print("sccs are", sccs)
+            print("SCC graph is:")
+            scc_reduced.print_out()
 
         n = len(scc_reduced)
         m = len(list(scc_reduced.edges()))
@@ -231,7 +237,7 @@ if __name__ == "__main__":
             # create an instance of the graph
             if args.skip_truth:
                 k = 1
-            instance = Instance(scc_reduced, k, scc_node_mapping)
+            instance = Instance(scc_reduced, k, reduced, sccs)
             k_improve = instance.best_cut_lower_bound
             print("# Reduced instance has n = {}, m = {}, and lower_bound "
                   "= {}:".format(n, m, instance.k), flush=True)
