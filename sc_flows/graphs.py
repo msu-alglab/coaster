@@ -8,7 +8,8 @@ from collections import defaultdict
 
 
 class AdjList:
-    def __init__(self, graph_file, graph_number, name, num_nodes):
+    def __init__(self, graph_file=None, graph_number=None, name=None,
+                 num_nodes=None):
         self.graph_file = graph_file
         self.graph_number = graph_number
         self.name = name
@@ -157,13 +158,30 @@ class AdjList:
         res.adj_list = res.inverse_adj_list
         return res
 
-    def dfs(self, v, visited):
+    def dfs(self, v, visited, this_scc):
         """traverse graph using DFS. For finding sccs."""
         visited[v] = True
-        print(v, end=" ")
+        this_scc.append(v)
         for u, _ in self.out_neighborhood(v):
             if not visited[u]:
-                self.dfs(u, visited)
+                self.dfs(u, visited, this_scc)
+
+    def scc_contracted(self, sccs):
+        """Return a copy of this graph contracted according to its subpath
+        connected components."""
+        res = AdjList(len(sccs))
+        mapping = dict()
+        for i, scc in enumerate(sccs):
+            for v in scc:
+                mapping[v] = i
+        print("mapping is", mapping)
+        for i, scc in enumerate(sccs):
+            out_edges = [item for sublist in [self.out_neighborhood(v) for v in
+                                              scc] for item in sublist]
+            for edge in out_edges:
+                if i != mapping[edge[0]]:  # don't add edges inside sccs
+                    res.add_edge(i, mapping[edge[0]], edge[1])
+        return res, mapping
 
     def scc(self):
         """
@@ -178,13 +196,14 @@ class AdjList:
         self.fill_stack(self.source(), visited, stack)
         transpose = self.transpose()
         visited = [False]*(max(self.vertices) + 1)
+        sccs = []
         while stack:
             v = stack.pop()
+            this_scc = []
             if not visited[v]:
-                transpose.dfs(v, visited)
-                print("")
-
-        return self, None
+                transpose.dfs(v, visited, this_scc)
+                sccs.append(this_scc)
+        return self.scc_contracted(sccs)
 
     def contracted(self):
         """

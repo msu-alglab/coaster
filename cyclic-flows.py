@@ -211,12 +211,12 @@ if __name__ == "__main__":
 
         # create a graph with all strongly connected components contracted to
         # single vertices
-        scc_reduced, scc_mapping = reduced.scc()
+        scc_reduced, scc_node_mapping = reduced.scc()
 
-        n = len(reduced)
-        m = len(list(reduced.edges()))
+        n = len(scc_reduced)
+        m = len(list(scc_reduced.edges()))
 
-        if len(reduced) <= 1:
+        if len(scc_reduced) <= 1:
             print("Trivial.")
             # continue
             k_improve = 1
@@ -231,7 +231,7 @@ if __name__ == "__main__":
             # create an instance of the graph
             if args.skip_truth:
                 k = 1
-            instance = Instance(reduced, k)
+            instance = Instance(scc_reduced, k)
             k_improve = instance.best_cut_lower_bound
             print("# Reduced instance has n = {}, m = {}, and lower_bound "
                   "= {}:".format(n, m, instance.k), flush=True)
