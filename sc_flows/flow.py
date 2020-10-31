@@ -530,9 +530,8 @@ class SolvedConstr:
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         solution_paths_all = recover_paths(self.instance, self.path_weights)
-        print("All solution paths")
-        print(solution_paths_all)
         for pathset in solution_paths_all:
+            print("\nProcessing solution pathset", pathset)
             for c in [x for x in self.instance.sccs if len(x) > 1]:
                 print("processing cycle", c)
                 v = c[0]
@@ -555,8 +554,15 @@ class SolvedConstr:
                 print("Paths to route over cycle (and in node, out node, and"
                       " weight)")
                 print(paths_to_route)
-
-
+                unique_start_end_pairs = list(set([(x[1], x[2]) for x in
+                                              paths_to_route]))
+                routings = []
+                for pair in unique_start_end_pairs:
+                    if pair[0] != pair[1]:
+                        print("processing start/end", pair)
+                        routings.append(self.instance.cyclic_graph.
+                                        get_all_routings(pair[0], pair[1], c))
+        print("")
         # convert contracted paths to full paths
         for solution_paths in solution_paths_all:
             weight_vec = []
@@ -778,4 +784,12 @@ def recover_paths(instance, weights, silent=True):
                             full_paths[i][p][0][-1] != arc_used:
                         full_paths[i][p][0].append(arc_used)
 
-    return full_paths
+    for sol in full_paths:
+        for path in sol:
+            path[0] = tuple(path[0])
+    sols = []
+    for x in full_paths:
+        x = [tuple(y) for y in x]
+        sols.append(x)
+    sols = list(set([tuple(sorted(x)) for x in sols]))
+    return sols

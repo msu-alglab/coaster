@@ -171,6 +171,39 @@ class AdjList:
             if not visited[u]:
                 self.dfs(u, visited, this_scc)
 
+    def dfs_routing(self, v, visited, scc, end, this_route, routings):
+        """For finding routings through a scc."""
+        print("beginning a call to dfs on node {}".format(v))
+        visited[v] = True
+        this_route.append(v)
+        print("visited is now", visited)
+        if v == end:
+            routings.append(this_route.copy())
+            print("at end. routings is now", routings)
+        else:
+            print("Not at end. calling for out neighbors.")
+            for out_neighb in\
+                    (set([x[0] for x in self.out_neighborhood(v)]) & set(scc)):
+                if not visited[out_neighb]:
+                    self.dfs_routing(out_neighb, visited, scc, end,
+                                     this_route, routings)
+        visited[v] = False
+        this_route.pop()
+
+    def get_all_routings(self, start, end, scc):
+        """
+        Produce all routings from start node to end node through a scc
+        in a cyclic graph.
+        """
+        visited = [False]*(max(scc) + 1)
+        routings = []
+        print("visited is", visited)
+        print("Getting all routings from {} to {} through scc {}".format(
+            start, end, scc))
+        self.dfs_routing(start, visited, scc, end, [], routings)
+
+        return routings
+
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath
         connected components.
