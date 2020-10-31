@@ -231,7 +231,7 @@ if __name__ == "__main__":
             # create an instance of the graph
             if args.skip_truth:
                 k = 1
-            instance = Instance(scc_reduced, k)
+            instance = Instance(scc_reduced, k, scc_node_mapping)
             k_improve = instance.best_cut_lower_bound
             print("# Reduced instance has n = {}, m = {}, and lower_bound "
                   "= {}:".format(n, m, instance.k), flush=True)

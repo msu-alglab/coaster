@@ -96,7 +96,9 @@ def solve(instance, og_graph, silent=True, guessed_weights=None):
     for key in new_table:
         for sys in new_table[key]:
             # we need to pass in the original graph in order to recover paths
-            solution = sys.satisfy_subpath_constraints(og_graph)
+            print("ending constr is:", sys)
+            solution = sys.route_cycles_and_satisfy_subpath_constraints(
+                og_graph)
             if sys:
                 return solution
 
