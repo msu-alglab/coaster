@@ -551,18 +551,10 @@ class SolvedConstr:
                             paths_to_route.append((path, in_node, out_node,
                                                   weight))
                             break
-                print("Paths to route over cycle (and in node, out node, and"
-                      " weight)")
-                print(paths_to_route)
-                unique_start_end_pairs = list(set([(x[1], x[2]) for x in
-                                              paths_to_route]))
-                routings = []
-                for pair in unique_start_end_pairs:
-                    if pair[0] != pair[1]:
-                        print("processing start/end", pair)
-                        routings.append(self.instance.cyclic_graph.
-                                        get_all_routings(pair[0], pair[1], c))
+                self.instance.cyclic_graph.route_cycle(c, paths_to_route)
+
         print("")
+
         # convert contracted paths to full paths
         for solution_paths in solution_paths_all:
             weight_vec = []

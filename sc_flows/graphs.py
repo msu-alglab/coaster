@@ -5,6 +5,7 @@
 #
 import copy
 from collections import defaultdict
+import itertools
 
 
 class AdjList:
@@ -102,11 +103,6 @@ class AdjList:
         else:
             return []
 
-    def in_neighborhood_edge_ids(self, u):
-        in_neighb = self.in_neighborhood(u)
-        print(self.in_arcs_lists)
-        return None
-
     def remove_weight(self, weight, u, v):
         for (w, flow) in self.adj_list[u]:
             if w == v:
@@ -173,15 +169,15 @@ class AdjList:
 
     def dfs_routing(self, v, visited, scc, end, this_route, routings):
         """For finding routings through a scc."""
-        print("beginning a call to dfs on node {}".format(v))
+        # print("beginning a call to dfs on node {}".format(v))
         visited[v] = True
         this_route.append(v)
-        print("visited is now", visited)
+        # print("visited is now", visited)
         if v == end:
             routings.append(this_route.copy())
-            print("at end. routings is now", routings)
+            # print("at end. routings is now", routings)
         else:
-            print("Not at end. calling for out neighbors.")
+            # print("Not at end. calling for out neighbors.")
             for out_neighb in\
                     (set([x[0] for x in self.out_neighborhood(v)]) & set(scc)):
                 if not visited[out_neighb]:
@@ -197,12 +193,63 @@ class AdjList:
         """
         visited = [False]*(max(scc) + 1)
         routings = []
-        print("visited is", visited)
-        print("Getting all routings from {} to {} through scc {}".format(
-            start, end, scc))
+        # print("visited is", visited)
+        # print("Getting all routings from {} to {} through scc {}".format(
+        #     start, end, scc))
         self.dfs_routing(start, visited, scc, end, [], routings)
 
         return routings
+
+    def test_scc_flow_cover(scc, routing, weights):
+
+        pass
+
+    def route_cycle(self, scc, paths):
+        """
+        Try different routings through this scc using these paths until a
+        viable one is found, or return None if there is no viable routing.
+        """
+
+        routings = dict()
+        print("Paths to route over cycle (and in node, out node, and"
+              " weight)")
+        print(paths)
+        unique_start_end_pairs = list(set([(x[1], x[2]) for x in
+                                      paths]))
+        pair_indices = dict()
+        # only consider pairs that have different start/end
+        for pair in unique_start_end_pairs:
+            if pair not in routings:
+                if pair[0] != pair[1]:
+                    print("processing start/end", pair)
+                    routings[pair] = self.get_all_routings(pair[0],
+                                                           pair[1],
+                                                           scc)
+                    pair_indices[pair] = [i for i, x in
+                                          enumerate(paths) if
+                                          x[1] == pair[0] and x[2] ==
+                                          pair[1]]
+
+        # routings has all needed routings for this cycle.
+        print("All routings are:", routings)
+        print("All pair indices are:", pair_indices)
+        weights = []
+        for pair in pair_indices:
+            weight_list = [x[3] for i, x in enumerate(paths)
+                           if i in pair_indices[pair]]
+            weights.append(weight_list)
+        print("All weights are:", weights)
+        # for each pair of start/end, create a product iterable over the
+        # routings over the start/end repeated the number of times the
+        # start/end pair occurs in this pathset
+        products = [list(itertools.
+                    product(routings[pair], repeat=len(pair_indices[pair])))
+                    for pair in routings]
+        for routing in itertools.product(*products):
+            # check whether the routing is viable
+            print("checking whether routing is viable:", routing)
+
+            self.test_flow_cover(scc, routing, weights)
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath
@@ -377,7 +424,7 @@ class AdjList:
                 s = self.arc_info[arc]['start']
                 t = self.arc_info[arc]['destin']
                 w = self.arc_info[arc]['weight']
-                print("{} {} {}".format(s, t, w))
+                print("{} {} {} arc_id={}".format(s, t, w, arc))
 
 
 def test_paths(graph, pathset):
