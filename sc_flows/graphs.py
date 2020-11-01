@@ -169,22 +169,27 @@ class AdjList:
 
     def dfs_routing(self, v, visited, scc, end, this_route, routings):
         """For finding routings through a scc."""
-        # print("beginning a call to dfs on node {}".format(v))
+        print("beginning a call to dfs on node {}".format(v))
         visited[v] = True
-        this_route.append(v)
-        # print("visited is now", visited)
+        print("visited is now", visited)
         if v == end:
             routings.append(this_route.copy())
-            # print("at end. routings is now", routings)
+            print("at end. routings is now", routings)
         else:
-            # print("Not at end. calling for out neighbors.")
-            for out_neighb in\
-                    (set([x[0] for x in self.out_neighborhood(v)]) & set(scc)):
-                if not visited[out_neighb]:
-                    self.dfs_routing(out_neighb, visited, scc, end,
+            out_arcs = [x for x in self.out_arcs_lists[v]
+                        if self.arc_info[x]["destin"] in scc]
+            print("Not at end. calling for out neighbors", out_arcs)
+            for out_arc in out_arcs:
+                u = self.arc_info[out_arc]["destin"]
+                if not visited[u]:
+                    this_route.append(out_arc)
+                    self.dfs_routing(u, visited, scc, end,
                                      this_route, routings)
         visited[v] = False
-        this_route.pop()
+        # when we first call this method on our entry node, we don't push
+        # anything onto this_route, so it will be empty when we finish.
+        if this_route:
+            this_route.pop()
 
     def get_all_routings(self, start, end, scc):
         """
