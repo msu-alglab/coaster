@@ -423,7 +423,8 @@ class Constr:
             if sorted_a[-1] == 1 and sorted_a[-2] == 0:
                 fixed[np.where(row[:-1] == 1)[0][0]] = int(row[-1])
         max_weight = self.instance.flow - sum(fixed.values())
-        weight_ranges = [list(range(1, max_weight + 1))
+        num_unfixed = self.utri.shape[0] - len(fixed)
+        weight_ranges = [list(range(1, max_weight + 1 - num_unfixed))
                          for x in range(self.instance.k)
                          if x not in fixed][:-1]
         # create a grid of weight options to try
@@ -444,8 +445,11 @@ class Constr:
                     weights[i] = remaining_flow
                 elif weights[i] is None:
                     weights[i] = row.pop()
+            # don't even try to solve if weights to don't sum to flow
+            if sum(weights) != self.instance.flow:
+                return False
             res = SolvedConstr(weights, self.instance).\
-                satisfy_subpath_constraints(og_graph)
+                route_cycles_and_satisfy_subpath_constraints(og_graph)
             if res:
                 return res
 
@@ -551,7 +555,12 @@ class SolvedConstr:
                             paths_to_route.append((path, in_node, out_node,
                                                   weight))
                             break
-                self.instance.cyclic_graph.route_cycle(c, paths_to_route)
+                result = self.instance.cyclic_graph.\
+                    route_cycle(c, paths_to_route)
+                if not result:
+                    return None
+                else:
+                    print("Found a routing through scc:", result)
 
         print("")
 
