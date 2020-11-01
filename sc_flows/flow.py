@@ -424,9 +424,11 @@ class Constr:
                 fixed[np.where(row[:-1] == 1)[0][0]] = int(row[-1])
         max_weight = self.instance.flow - sum(fixed.values())
         num_unfixed = self.utri.shape[0] - len(fixed)
-        weight_ranges = [list(range(1, max_weight + 1 - num_unfixed))
+        weight_ranges = [list(range(1, max_weight + 2 - num_unfixed))
                          for x in range(self.instance.k)
                          if x not in fixed][:-1]
+        print("fixed is", fixed)
+        print("weight ranges is", weight_ranges)
         # create a grid of weight options to try
         grid = np.array(np.meshgrid(*weight_ranges)).\
             T.reshape(-1, len(weight_ranges))
@@ -445,8 +447,13 @@ class Constr:
                     weights[i] = remaining_flow
                 elif weights[i] is None:
                     weights[i] = row.pop()
-            # don't even try to solve if weights to don't sum to flow
+            print("fixed is", fixed)
+            print(weights)
+            # don't even try to solve if weights to don't sum to flow or
+            # contains a non positive value
             if sum(weights) != self.instance.flow:
+                return False
+            if len([x for x in weights if x < 1]) > 0:
                 return False
             res = SolvedConstr(weights, self.instance).\
                 route_cycles_and_satisfy_subpath_constraints(og_graph)
@@ -534,38 +541,47 @@ class SolvedConstr:
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         solution_paths_all = recover_paths(self.instance, self.path_weights)
-        for pathset in solution_paths_all:
-            print("\nProcessing solution pathset", pathset)
-            for c in [x for x in self.instance.sccs if len(x) > 1]:
-                print("processing cycle", c)
-                v = c[0]
-                in_edges = self.instance.graph.in_arcs_lists[v]
-                in_nodes = [self.instance.cyclic_graph.arc_info[e]["destin"]
-                            for e in in_edges]
-                out_edges = self.instance.graph.out_arcs_lists[v]
-                out_nodes = [self.instance.cyclic_graph.arc_info[e]["start"]
-                             for e in out_edges]
-                paths_to_route = []
-                for path, weight in pathset:
-                    for i, edge in enumerate(path):
-                        if edge in in_edges:
-                            in_node = in_nodes[in_edges.index(edge)]
-                            edge = path[i + 1]
-                            out_node = out_nodes[out_edges.index(edge)]
-                            paths_to_route.append((path, in_node, out_node,
-                                                  weight))
-                            break
-                result = self.instance.cyclic_graph.\
-                    route_cycle(c, paths_to_route)
-                if not result:
-                    return None
-                else:
-                    print("Found a routing through scc:", result)
+        print("len of all solution paths returned", len(solution_paths_all))
+        # only look into cycles if there are cycles
+        if [x for x in self.instance.sccs if len(x) > 1]:
+            found_path = False
+            for pathset in solution_paths_all:
+                print("\nProcessing solution pathset", pathset)
+                for c in [x for x in self.instance.sccs if len(x) > 1]:
+                    print("processing cycle", c)
+                    v = c[0]
+                    in_edges = self.instance.graph.in_arcs_lists[v]
+                    in_nodes = [self.instance.cyclic_graph.arc_info[e]["destin"]
+                                for e in in_edges]
+                    out_edges = self.instance.graph.out_arcs_lists[v]
+                    out_nodes = [self.instance.cyclic_graph.arc_info[e]["start"]
+                                 for e in out_edges]
+                    paths_to_route = []
+                    for path, weight in pathset:
+                        for i, edge in enumerate(path):
+                            if edge in in_edges:
+                                in_node = in_nodes[in_edges.index(edge)]
+                                edge = path[i + 1]
+                                out_node = out_nodes[out_edges.index(edge)]
+                                paths_to_route.append((path, in_node, out_node,
+                                                      weight))
+                                break
+                    result = self.instance.cyclic_graph.\
+                        route_cycle(c, paths_to_route)
+                    if result:
+                        print("Found a routing through scc:", result)
+                        assert 1 == 0
+            if not found_path:
+                return False
 
-        print("")
+        # at this point, we've got paths in the reduced graph, not the scc
+        # graph. so we should switch self.instance.graph to be
+        # self.instance.cyclic_graph.
+        self.instance.graph = self.instance.cyclic_graph
 
         # convert contracted paths to full paths
         for solution_paths in solution_paths_all:
+            print(solution_paths)
             weight_vec = []
             paths = []
             for path_deq, weight in solution_paths:
@@ -577,15 +593,19 @@ class SolvedConstr:
                     node_seq.append(graph.arc_info[arc]['destin'])
                 weight_vec.append(weight)
                 paths.append(node_seq)
+            print("recovered paths are", paths)
 
             for (L, d) in zip(self.instance.graph.subpath_constraints,
                               self.instance.graph.subpath_demands):
                 total_coverage = 0
+                print("constraint is", L)
+                print("demand is", d)
                 for (path, weight) in zip(paths, weight_vec):
                     if str(L)[1:-1] in str(path)[1:-1]:
                         total_coverage += weight
                 # if we don't meet demand, this solution paths is not good
                 if d > total_coverage:
+                    print("doesn't meet subpath demand")
                     break
             else:
                 # we made it through the loop without breaking, so this is a
@@ -765,11 +785,15 @@ def recover_paths(instance, weights, silent=True):
 
         old_paths = new_paths
 
+    print("len of final paths", len(old_paths))
+
     # recover the paths
     # we want a list of lists of [path deque, weight]
     full_paths = [[[deque(), weight] for weight in weights] for path in
                   new_paths]
+    print("Decoding the paths")
     for i, path in enumerate(new_paths):
+        # print("Path is:", path)
         for conf in path:
             for v in conf:
                 # incidence is the list of all paths passing through this vert
@@ -785,6 +809,7 @@ def recover_paths(instance, weights, silent=True):
                             full_paths[i][p][0][-1] != arc_used:
                         full_paths[i][p][0].append(arc_used)
 
+    print("length of full paths is", len(full_paths))
     for sol in full_paths:
         for path in sol:
             path[0] = tuple(path[0])
@@ -793,4 +818,5 @@ def recover_paths(instance, weights, silent=True):
         x = [tuple(y) for y in x]
         sols.append(x)
     sols = list(set([tuple(sorted(x)) for x in sols]))
+    print("len of deduped", len(sols))
     return sols

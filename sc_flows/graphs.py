@@ -169,16 +169,16 @@ class AdjList:
 
     def dfs_routing(self, v, visited, scc, end, this_route, routings):
         """For finding routings through a scc."""
-        print("beginning a call to dfs on node {}".format(v))
+        # print("beginning a call to dfs on node {}".format(v))
         visited[v] = True
-        print("visited is now", visited)
+        # print("visited is now", visited)
         if v == end:
             routings.append(this_route.copy())
-            print("at end. routings is now", routings)
+            # print("at end. routings is now", routings)
         else:
             out_arcs = [x for x in self.out_arcs_lists[v]
                         if self.arc_info[x]["destin"] in scc]
-            print("Not at end. calling for out neighbors", out_arcs)
+            # print("Not at end. calling for out neighbors", out_arcs)
             for out_arc in out_arcs:
                 u = self.arc_info[out_arc]["destin"]
                 if not visited[u]:
@@ -205,9 +205,16 @@ class AdjList:
 
         return routings
 
-    def test_scc_flow_cover(scc, routing, weights):
-
-        pass
+    def test_scc_flow_cover(self, scc_arcs, routing, weights):
+        recovered_arc_weights = defaultdict(int)
+        for start_end_pair, weight_list in zip(routing, weights):
+            for path, weight in zip(start_end_pair, weight_list):
+                for arc in path:
+                    recovered_arc_weights[arc] += weight
+        for arc in scc_arcs:
+            if recovered_arc_weights[arc] != self.arc_info[arc]["weight"]:
+                return False
+        return True
 
     def route_cycle(self, scc, paths):
         """
@@ -238,6 +245,11 @@ class AdjList:
         # routings has all needed routings for this cycle.
         print("All routings are:", routings)
         print("All pair indices are:", pair_indices)
+        scc_arcs = list(set([item for sublist in
+                             [item for sublist in routings.values()
+                              for item in sublist]
+                             for item in sublist]))
+        print("scc arcs", scc_arcs)
         weights = []
         for pair in pair_indices:
             weight_list = [x[3] for i, x in enumerate(paths)
@@ -252,9 +264,10 @@ class AdjList:
                     for pair in routings]
         for routing in itertools.product(*products):
             # check whether the routing is viable
-            print("checking whether routing is viable:", routing)
-
-            self.test_flow_cover(scc, routing, weights)
+            # print("checking whether routing is viable:", routing)
+            works = self.test_scc_flow_cover(scc_arcs, routing, weights)
+            if works:
+                return routing, pair_indices
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath

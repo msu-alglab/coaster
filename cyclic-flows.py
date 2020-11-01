@@ -90,7 +90,7 @@ def find_opt_size(instance, maxtime):
     try:
         with timeout(seconds=maxtime):
             while True:
-                print("# \tTrying to solve with k = {}".format(instance.k))
+                print("\n# \tTrying to solve with k = {}".format(instance.k))
                 solution = solve(instance, graph, silent=True)
                 if bool(solution):
                     break
@@ -201,6 +201,8 @@ if __name__ == "__main__":
               "{}:".format(filename, graphnumber, graphname, n_input,
                            m_input, k if k else "?"), flush=True)
 
+        print("Original graph is:")
+        graph.print_out()
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
