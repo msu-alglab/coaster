@@ -543,19 +543,20 @@ class SolvedConstr:
         solution_paths_all = recover_paths(self.instance, self.path_weights)
         print("len of all solution paths returned", len(solution_paths_all))
         # only look into cycles if there are cycles
+        sol_paths = []
         if [x for x in self.instance.sccs if len(x) > 1]:
             found_path = False
             for pathset in solution_paths_all:
-                print("\nProcessing solution pathset", pathset)
+                # print("\nProcessing solution pathset", pathset)
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
-                    print("processing cycle", c)
+                    # print("processing cycle", c)
                     v = c[0]
                     in_edges = self.instance.graph.in_arcs_lists[v]
-                    in_nodes = [self.instance.cyclic_graph.arc_info[e]["destin"]
-                                for e in in_edges]
+                    in_nodes = [self.instance.cyclic_graph.
+                                arc_info[e]["destin"] for e in in_edges]
                     out_edges = self.instance.graph.out_arcs_lists[v]
-                    out_nodes = [self.instance.cyclic_graph.arc_info[e]["start"]
-                                 for e in out_edges]
+                    out_nodes = [self.instance.cyclic_graph.
+                                 arc_info[e]["start"] for e in out_edges]
                     paths_to_route = []
                     for path, weight in pathset:
                         for i, edge in enumerate(path):
@@ -570,7 +571,29 @@ class SolvedConstr:
                         route_cycle(c, paths_to_route)
                     if result:
                         print("Found a routing through scc:", result)
-                        assert 1 == 0
+                        found_path = True
+                        # incorporate into path
+                        routing, indices = result
+                        new_pathset = []
+                        for i, path in enumerate(pathset):
+                            # print("Path ", i, path)
+                            try:
+                                routing_to_insert = routing[indices.index(i)]
+                                in_edge = list(set(in_edges) & set(path[0]))[0]
+                                # print("in edge", in_edge)
+                                in_edge_index = path[0].index(in_edge)
+                                # print("in edge index", in_edge_index)
+                                first_half = path[0][:in_edge_index + 1]
+                                # print("first half", first_half)
+                                second_half = path[0][in_edge_index + 1:]
+                                # print("second half", second_half)
+                                new_path = first_half + \
+                                    tuple(routing_to_insert) + second_half
+                                new_pathset.append((new_path, path[1]))
+                            except ValueError:
+                                new_pathset.append(path)
+                        sol_paths.append(new_pathset)
+
             if not found_path:
                 return False
 
@@ -580,7 +603,7 @@ class SolvedConstr:
         self.instance.graph = self.instance.cyclic_graph
 
         # convert contracted paths to full paths
-        for solution_paths in solution_paths_all:
+        for solution_paths in sol_paths:
             print(solution_paths)
             weight_vec = []
             paths = []

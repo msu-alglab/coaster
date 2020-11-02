@@ -223,9 +223,9 @@ class AdjList:
         """
 
         routings = dict()
-        print("Paths to route over cycle (and in node, out node, and"
-              " weight)")
-        print(paths)
+        # print("Paths to route over cycle (and in node, out node, and"
+        #       " weight)")
+        # print(paths)
         unique_start_end_pairs = list(set([(x[1], x[2]) for x in
                                       paths]))
         pair_indices = dict()
@@ -233,7 +233,7 @@ class AdjList:
         for pair in unique_start_end_pairs:
             if pair not in routings:
                 if pair[0] != pair[1]:
-                    print("processing start/end", pair)
+                    # print("processing start/end", pair)
                     routings[pair] = self.get_all_routings(pair[0],
                                                            pair[1],
                                                            scc)
@@ -243,19 +243,19 @@ class AdjList:
                                           pair[1]]
 
         # routings has all needed routings for this cycle.
-        print("All routings are:", routings)
-        print("All pair indices are:", pair_indices)
+        # print("All routings are:", routings)
+        # print("All pair indices are:", pair_indices)
         scc_arcs = list(set([item for sublist in
                              [item for sublist in routings.values()
                               for item in sublist]
                              for item in sublist]))
-        print("scc arcs", scc_arcs)
+        # print("scc arcs", scc_arcs)
         weights = []
         for pair in pair_indices:
             weight_list = [x[3] for i, x in enumerate(paths)
                            if i in pair_indices[pair]]
             weights.append(weight_list)
-        print("All weights are:", weights)
+        # print("All weights are:", weights)
         # for each pair of start/end, create a product iterable over the
         # routings over the start/end repeated the number of times the
         # start/end pair occurs in this pathset
@@ -267,6 +267,9 @@ class AdjList:
             # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
+                routing = [item for sublist in routing for item in sublist]
+                pair_indices = [item for sublist in pair_indices.values()
+                                for item in sublist]
                 return routing, pair_indices
 
     def scc_contracted(self, sccs):
