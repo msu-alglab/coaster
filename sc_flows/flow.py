@@ -544,7 +544,12 @@ class SolvedConstr:
         print("len of all solution paths returned", len(solution_paths_all))
         # only look into cycles if there are cycles
         sol_paths = []
-        if [x for x in self.instance.sccs if len(x) > 1]:
+        if len([x for x in self.instance.sccs if len(x) > 1]) == 0:
+            print("No cycles to process.")
+            found_path = True
+            sol_paths = solution_paths_all
+        else:
+            print("Processing cycles...")
             found_path = False
             for pathset in solution_paths_all:
                 # print("\nProcessing solution pathset", pathset)
@@ -807,14 +812,12 @@ def recover_paths(instance, weights, silent=True):
                     new_paths.append(path_copy)
 
         old_paths = new_paths
-
-    print("len of final paths", len(old_paths))
+        print("at node {} we have {} paths".format(v, len(old_paths)))
 
     # recover the paths
     # we want a list of lists of [path deque, weight]
     full_paths = [[[deque(), weight] for weight in weights] for path in
                   new_paths]
-    print("Decoding the paths")
     for i, path in enumerate(new_paths):
         # print("Path is:", path)
         for conf in path:
@@ -841,5 +844,5 @@ def recover_paths(instance, weights, silent=True):
         x = [tuple(y) for y in x]
         sols.append(x)
     sols = list(set([tuple(sorted(x)) for x in sols]))
-    print("len of deduped", len(sols))
+    print("len of deduped paths is", len(sols))
     return sols
