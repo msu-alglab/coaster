@@ -264,7 +264,7 @@ class AdjList:
                     for pair in routings]
         for routing in itertools.product(*products):
             # check whether the routing is viable
-            print("checking whether routing is viable:", routing)
+            # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
                 routing = [item for sublist in routing for item in sublist]

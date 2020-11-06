@@ -201,17 +201,18 @@ if __name__ == "__main__":
               "{}:".format(filename, graphnumber, graphname, n_input,
                            m_input, k if k else "?"), flush=True)
 
-        print("Original graph is:")
-        graph.print_out()
+        if args.print_contracted:
+            print("Original graph is:")
+            graph.print_out()
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
-        print("contraction mapping is,", mapping)
         # reduced is the graph after contractions;
         # mapping enables mapping paths on reduced back to paths in graph
         if args.print_contracted:
             print("Contracted graph is:")
             reduced.print_out()
+            print("contraction mapping is,", mapping)
 
         # create a graph with all strongly connected components contracted to
         # single vertices
