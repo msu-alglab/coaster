@@ -554,7 +554,7 @@ class SolvedConstr:
             for pathset in solution_paths_all:
                 # print("\nProcessing solution pathset", pathset)
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
-                    # print("processing cycle", c)
+                    print("processing cycle", c)
                     v = c[0]
                     in_edges = self.instance.graph.in_arcs_lists[v]
                     in_nodes = [self.instance.cyclic_graph.
@@ -574,33 +574,41 @@ class SolvedConstr:
                                 break
                     result = self.instance.cyclic_graph.\
                         route_cycle(c, paths_to_route)
-                    if result:
+                    if not result:
+                        # this scc is unsolvable, so return False
+                        return False
+                    else:
                         print("Found a routing through scc:", result)
-                        found_path = True
+                        print("v=", v)
+                        print("in edges", in_edges)
                         # incorporate into path
                         routing, indices = result
                         new_pathset = []
                         for i, path in enumerate(pathset):
-                            # print("Path ", i, path)
+                            print("Path ", i, path)
                             try:
                                 routing_to_insert = routing[indices.index(i)]
+                                print("routing to insert", routing_to_insert)
+                                print("in edges", in_edges)
+                                print("path[0]", path[0])
                                 in_edge = list(set(in_edges) & set(path[0]))[0]
-                                # print("in edge", in_edge)
+                                print("in edge", in_edge)
                                 in_edge_index = path[0].index(in_edge)
-                                # print("in edge index", in_edge_index)
+                                print("in edge index", in_edge_index)
                                 first_half = path[0][:in_edge_index + 1]
-                                # print("first half", first_half)
+                                print("first half", first_half)
                                 second_half = path[0][in_edge_index + 1:]
-                                # print("second half", second_half)
+                                print("second half", second_half)
                                 new_path = first_half + \
                                     tuple(routing_to_insert) + second_half
                                 new_pathset.append((new_path, path[1]))
-                            except ValueError:
+                            except (ValueError, IndexError):
+                                # this path enters and leaves by the same node
+                                # so it doesn't need to be changed (ValueError)
+                                # or this path doesn't even go through the SCC
+                                # (IndexError)
                                 new_pathset.append(path)
                         sol_paths.append(new_pathset)
-
-            if not found_path:
-                return False
 
         # at this point, we've got paths in the reduced graph, not the scc
         # graph. so we should switch self.instance.graph to be
