@@ -11,9 +11,9 @@ import numpy as np
 from scipy.optimize import linprog
 import copy
 # local imports
-from sc_flows.graphs import convert_to_top_sorting, compute_cuts,\
+from cyclic_flows.graphs import convert_to_top_sorting, compute_cuts,\
                             compute_edge_cuts
-from sc_flows.partition import algorithm_u
+from cyclic_flows.partition import algorithm_u
 
 
 class Instance:

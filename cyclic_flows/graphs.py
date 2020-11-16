@@ -447,6 +447,21 @@ class AdjList:
                 w = self.arc_info[arc]['weight']
                 print("{} {} {} arc_id={}".format(s, t, w, arc))
 
+    def convert_nodeseq_to_arcs(self, path):
+        """Take a path as a sequence of noces and return the same path as a
+        sequence of arc ids."""
+        path_arcs = []
+        for i in range(len(path) - 1):
+            u = path[i]
+            v = path[i + 1]
+            for arc, info in self.arc_info.items():
+                if info["start"] == u and info["destin"] == v:
+                    break
+            else:
+                raise ValueError("There is no edge ({},{})".format(u, v))
+            path_arcs.append(arc)
+        return path_arcs
+
 
 def test_paths(graph, pathset):
     for path in pathset:
@@ -461,15 +476,15 @@ def test_paths(graph, pathset):
                                  "vertices: {}, {}".format(start, dest))
 
 
-def test_flow_cover(graph, solution):
+def test_flow_cover(graph, paths, weights):
     """Check that the path, weight solution covers every edge flow exactly and
     satisfies all subpath demands."""
     # Decode the solution set of paths
     recovered_arc_weights = defaultdict(int)
-    for path_object in solution:
-        path_deq, path_weight = path_object
-        for arc in path_deq:
-            recovered_arc_weights[arc] += path_weight
+    for path, weight in zip(paths, weights):
+        path_arcs = graph.convert_nodeseq_to_arcs(path)
+        for arc in path_arcs:
+            recovered_arc_weights[arc] += weight
     # Check that every arc has its flow covered
     for arc, arc_val in graph.arc_info.items():
         true_flow = arc_val['weight']
@@ -477,6 +492,7 @@ def test_flow_cover(graph, solution):
         if (true_flow != recovered_flow):
             print("SOLUTION INCORRECT; arc {} has flow {},"
                   " soln {}".format(arc, true_flow, recovered_flow))
+        assert true_flow == recovered_flow
 
 
 def convert_to_top_sorting(graph):

@@ -8,7 +8,7 @@
 from collections import defaultdict, deque
 
 # local imports
-from sc_flows.flow import Constr, SolvedConstr, PathConf
+from cyclic_flows.flow import Constr, SolvedConstr, PathConf
 
 
 def solve(instance, og_graph, silent=True, guessed_weights=None):

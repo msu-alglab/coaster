@@ -13,10 +13,10 @@ import signal
 # local imports
 from os import path
 import sys
-from sc_flows.guess_weight import solve
-from sc_flows.parser import read_instances
-from sc_flows.flow import Instance
-# from sc_flows.graphs import test_flow_cover
+from cyclic_flows.guess_weight import solve
+from cyclic_flows.parser import read_instances
+from cyclic_flows.flow import Instance
+from cyclic_flows.graphs import test_flow_cover
 
 
 # Override error message to show help message instead
@@ -253,17 +253,17 @@ if __name__ == "__main__":
             if bool(solution) and recover:
                 paths, weights = solution
                 start_path_time = time.time()
-                # Check solution:
-                # test_flow_cover(reduced, solution_paths)
-                # print("# Paths, weights pass test: flow decomposition"
-                #       " confirmed.")
-                # Print solutions
                 print("# Solutions:")
                 weight_vec = []
                 k_opt = len(weights)
 
                 for p, w in zip(paths, weights):
                     print("{}: {}".format(w, p))
+                # Check solution:
+                test_flow_cover(graph, paths, weights)
+                print("# Paths, weights pass test: flow decomposition"
+                      " confirmed.")
+                # Print solutions
 
         # print experimental statistics
         if args.experiment_info:

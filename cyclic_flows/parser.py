@@ -4,7 +4,7 @@
 # under the three-clause BSD license; see LICENSE.
 #
 # local imports
-from sc_flows.graphs import AdjList
+from cyclic_flows.graphs import AdjList
 # python libs
 import re
 import os

@@ -9,7 +9,7 @@
 import sys
 import itertools
 # local imports
-from sc_flows.dp import solve as solve_dp
+from cyclic_flows.dp import solve as solve_dp
 
 
 # Print iterations progress
