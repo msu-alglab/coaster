@@ -107,7 +107,8 @@ if __name__ == "__main__":
     """
         Main script
     """
-    with open('readme_short.txt', 'r') as desc:
+    readme_filename = path.join(path.dirname(__file__), 'readme_short.txt')
+    with open(readme_filename, 'r') as desc:
         description = desc.read()
     parser = DefaultHelpParser(description=description)
     parser.add_argument('file',
