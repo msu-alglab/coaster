@@ -545,14 +545,14 @@ class SolvedConstr:
         # only look into cycles if there are cycles
         sol_paths = []
         if len([x for x in self.instance.sccs if len(x) > 1]) == 0:
-            # print("No cycles to process.")
+            print("No cycles to process.")
             sol_paths = solution_paths_all
         else:
-            # print("Processing cycles...")
+            print("Processing cycles...")
             for pathset in solution_paths_all:
-                # print("\nProcessing solution pathset", pathset)
+                print("\nProcessing solution pathset", pathset)
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
-                    # print("processing cycle", c)
+                    print("processing cycle", c)
                     v = c[0]
                     in_edges = self.instance.graph.in_arcs_lists[v]
                     in_nodes = [self.instance.cyclic_graph.
@@ -574,29 +574,30 @@ class SolvedConstr:
                         route_cycle(c, paths_to_route)
                     if not result:
                         # this scc is unsolvable, so return False
+                        print("no way to route these paths around cycle")
                         return False
                     else:
-                        # print("Found a routing through scc:", result)
-                        # print("v=", v)
-                        # print("in edges", in_edges)
+                        print("Found a routing through scc:", result)
+                        print("v=", v)
+                        print("in edges", in_edges)
                         # incorporate into path
                         routing, indices = result
                         new_pathset = []
                         for i, path in enumerate(pathset):
-                            # print("Path ", i, path)
+                            print("Path ", i, path)
                             try:
                                 routing_to_insert = routing[indices.index(i)]
-                                # print("routing to insert", routing_to_insert)
-                                # print("in edges", in_edges)
-                                # print("path[0]", path[0])
+                                print("routing to insert", routing_to_insert)
+                                print("in edges", in_edges)
+                                print("path[0]", path[0])
                                 in_edge = list(set(in_edges) & set(path[0]))[0]
-                                # print("in edge", in_edge)
+                                print("in edge", in_edge)
                                 in_edge_index = path[0].index(in_edge)
-                                # print("in edge index", in_edge_index)
+                                print("in edge index", in_edge_index)
                                 first_half = path[0][:in_edge_index + 1]
-                                # print("first half", first_half)
+                                print("first half", first_half)
                                 second_half = path[0][in_edge_index + 1:]
-                                # print("second half", second_half)
+                                print("second half", second_half)
                                 new_path = first_half + \
                                     tuple(routing_to_insert) + second_half
                                 new_pathset.append((new_path, path[1]))
@@ -605,17 +606,19 @@ class SolvedConstr:
                                 # so it doesn't need to be changed (ValueError)
                                 # or this path doesn't even go through the SCC
                                 # (IndexError)
+                                print("Exception?")
                                 new_pathset.append(path)
                         sol_paths.append(new_pathset)
 
         # at this point, we've got paths in the reduced graph, not the scc
         # graph. so we should switch self.instance.graph to be
         # self.instance.cyclic_graph.
+        print("Finished?")
         self.instance.graph = self.instance.cyclic_graph
 
         # convert contracted paths to full paths
         for solution_paths in sol_paths:
-            # print(solution_paths)
+            print(solution_paths)
             weight_vec = []
             paths = []
             for path_deq, weight in solution_paths:
@@ -627,7 +630,7 @@ class SolvedConstr:
                     node_seq.append(graph.arc_info[arc]['destin'])
                 weight_vec.append(weight)
                 paths.append(node_seq)
-            # print("recovered paths are", paths)
+            print("recovered paths are", paths)
 
             for (L, d) in zip(self.instance.graph.subpath_constraints,
                               self.instance.graph.subpath_demands):
