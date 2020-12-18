@@ -219,11 +219,30 @@ class AdjList:
         print("This routing works")
         return True
 
-    def route_cycle(self, scc, paths):
+    def route_cycle(self, scc, og_graph, pathset):
         """
-        Try different routings through this scc using these paths until a
-        viable one is found, or return None if there is no viable routing.
+        Assuming this graph is a cyclic graph, try different routings through
+        the given scc, first convert paths, then try to route these paths until
+        a viable one is found, or return None if there is no viable routing.
+        * scc: a list of nodes in the strongly connected component
+        * og_graph: a non-compressed version of the cyclic graph
+        * pathset: a set of paths decomposing this graph
         """
+        print("processing cycle", scc)
+        v = scc[0]
+        in_edges = og_graph.in_arcs_lists[v]
+        in_nodes = [self.arc_info[e]["destin"] for e in in_edges]
+        out_edges = og_graph.out_arcs_lists[v]
+        out_nodes = [self.arc_info[e]["start"] for e in out_edges]
+        paths = []
+        for path, weight in pathset:
+            for i, edge in enumerate(path):
+                if edge in in_edges:
+                    in_node = in_nodes[in_edges.index(edge)]
+                    edge = path[i + 1]
+                    out_node = out_nodes[out_edges.index(edge)]
+                    paths.append((path, in_node, out_node, weight))
+                    break
 
         routings = dict()
         print("Paths to route over cycle (and in node, out node, and"
@@ -277,7 +296,7 @@ class AdjList:
                 routing = [item for sublist in routing for item in sublist]
                 pair_indices = [item for sublist in pair_indices.values()
                                 for item in sublist]
-                return routing, pair_indices
+                return routing, pair_indices, in_edges
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath
