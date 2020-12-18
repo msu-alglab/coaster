@@ -595,6 +595,7 @@ class SolvedConstr:
                     new_pathset = replacement_pathset
                 else:  # executes if we processed all sccs successfully
                     sol_paths.append(new_pathset)
+                    break  # we found a pathset that can be extended, so done
 
         if sol_paths:
             # at this point, we've got paths in the reduced graph, not the scc
