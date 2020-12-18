@@ -572,12 +572,9 @@ class SolvedConstr:
                                 break
                     result = self.instance.cyclic_graph.\
                         route_cycle(c, paths_to_route)
-                    if not result:
-                        # this scc is unsolvable, so return False
-                        print("no way to route these paths around cycle")
-                        return False
-                    else:
-                        print("Found a routing through scc:", result)
+                    if result:
+                        # this scc is can be covered by this pathest
+                        print("Found a routing through scc:", result[0])
                         print("v=", v)
                         print("in edges", in_edges)
                         # incorporate into path
@@ -608,46 +605,48 @@ class SolvedConstr:
                                 # (IndexError)
                                 print("Exception?")
                                 new_pathset.append(path)
-                        sol_paths.append(new_pathset)
+                    else:
+                        # this pathset doesn't work, so stop considering it
+                        break
+                else:  # executes if we processed all sccs successfully
+                    sol_paths.append(new_pathset)
 
-        # at this point, we've got paths in the reduced graph, not the scc
-        # graph. so we should switch self.instance.graph to be
-        # self.instance.cyclic_graph.
-        print("Finished?")
-        self.instance.graph = self.instance.cyclic_graph
+        if sol_paths:
+            # at this point, we've got paths in the reduced graph, not the scc
+            # graph. so we should switch self.instance.graph to be
+            # self.instance.cyclic_graph.
+            self.instance.graph = self.instance.cyclic_graph
 
-        # convert contracted paths to full paths
-        for solution_paths in sol_paths:
-            print(solution_paths)
-            weight_vec = []
-            paths = []
-            for path_deq, weight in solution_paths:
-                real_path = []
-                for arc in path_deq:
-                    real_path.extend(self.instance.graph.mapping[arc])
-                node_seq = [graph.source()]
-                for arc in real_path:
-                    node_seq.append(graph.arc_info[arc]['destin'])
-                weight_vec.append(weight)
-                paths.append(node_seq)
-            print("recovered paths are", paths)
+            # convert contracted paths to full paths
+            for solution_paths in sol_paths:
+                print(solution_paths)
+                weight_vec = []
+                paths = []
+                for path_deq, weight in solution_paths:
+                    real_path = []
+                    for arc in path_deq:
+                        real_path.extend(self.instance.graph.mapping[arc])
+                    node_seq = [graph.source()]
+                    for arc in real_path:
+                        node_seq.append(graph.arc_info[arc]['destin'])
+                    weight_vec.append(weight)
+                    paths.append(node_seq)
+                print("recovered paths are", paths)
 
-            for (L, d) in zip(self.instance.graph.subpath_constraints,
-                              self.instance.graph.subpath_demands):
-                total_coverage = 0
-                # print("constraint is", L)
-                # print("demand is", d)
-                for (path, weight) in zip(paths, weight_vec):
-                    if str(L)[1:-1] in str(path)[1:-1]:
-                        total_coverage += weight
-                # if we don't meet demand, this solution paths is not good
-                if d > total_coverage:
-                    # print("doesn't meet subpath demand")
-                    break
-            else:
-                # we made it through the loop without breaking, so this is a
-                # good solution
-                return paths, weight_vec
+                for (L, d) in zip(self.instance.graph.subpath_constraints,
+                                  self.instance.graph.subpath_demands):
+                    total_coverage = 0
+                    # print("constraint is", L)
+                    # print("demand is", d)
+                    for (path, weight) in zip(paths, weight_vec):
+                        if str(L)[1:-1] in str(path)[1:-1]:
+                            total_coverage += weight
+                    # if we don't meet demand, this solution paths is not good
+                    if d > total_coverage:
+                        # print("doesn't meet subpath demand")
+                        break
+                else:  # executes if all subpath constraint satisfied
+                    return paths, weight_vec
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
