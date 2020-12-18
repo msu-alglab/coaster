@@ -550,45 +550,49 @@ class SolvedConstr:
         else:
             print("Processing cycles...")
             for pathset in solution_paths_all:
-                print("\nProcessing solution pathset", pathset)
+                new_pathset = pathset
+                print("\nProcessing solution pathset", new_pathset)
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
                     result = self.instance.cyclic_graph.\
-                        route_cycle(c, self.instance.graph, pathset)
+                        route_cycle(c, self.instance.graph, new_pathset)
                     if result:
                         # this scc is can be covered by this pathest
-                        print("Found a routing through scc:", result[0])
-                        # print("v=", v)
-                        # print("in edges", in_edges)
                         # incorporate into path
                         routing, indices, in_edges = result
-                        new_pathset = []
-                        for i, path in enumerate(pathset):
-                            # print("Path ", i, path)
+                        print("Found a routing through scc:", result[0])
+                        print("in edges", in_edges)
+                        replacement_pathset = []
+                        for i, path in enumerate(new_pathset):
+                            print("Path ", i, path)
                             try:
                                 routing_to_insert = routing[indices.index(i)]
-                                # print("routing to insert", routing_to_insert)
-                                # print("in edges", in_edges)
-                                # print("path[0]", path[0])
+                                print("### routing to insert",
+                                      routing_to_insert)
+                                print("### in edges", in_edges)
                                 in_edge = list(set(in_edges) & set(path[0]))[0]
-                                # print("in edge", in_edge)
+                                print("### in edge", in_edge)
                                 in_edge_index = path[0].index(in_edge)
-                                # print("in edge index", in_edge_index)
+                                print("### in edge index", in_edge_index)
                                 first_half = path[0][:in_edge_index + 1]
-                                # print("first half", first_half)
+                                print("### first half", first_half)
                                 second_half = path[0][in_edge_index + 1:]
-                                # print("second half", second_half)
+                                print("### second half", second_half)
                                 new_path = first_half + \
                                     tuple(routing_to_insert) + second_half
-                                new_pathset.append((new_path, path[1]))
+                                replacement_pathset.append((new_path, path[1]))
                             except (ValueError, IndexError):
                                 # this path enters and leaves by the same node
                                 # so it doesn't need to be changed (ValueError)
                                 # or this path doesn't even go through the SCC
                                 # (IndexError)
-                                new_pathset.append(path)
+                                print("### path does not need to be changed")
+                                replacement_pathset.append(path)
+                        print("##### After routing paths, new_pathset is",
+                              replacement_pathset)
                     else:
                         # this pathset doesn't work, so stop considering it
                         break
+                    new_pathset = replacement_pathset
                 else:  # executes if we processed all sccs successfully
                     sol_paths.append(new_pathset)
 

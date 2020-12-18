@@ -235,22 +235,22 @@ class AdjList:
         out_edges = og_graph.out_arcs_lists[v]
         out_nodes = [self.arc_info[e]["start"] for e in out_edges]
         paths = []
-        for path, weight in pathset:
+        for j, pathinfo in enumerate(pathset):
+            path, weight = pathinfo
             for i, edge in enumerate(path):
                 if edge in in_edges:
                     in_node = in_nodes[in_edges.index(edge)]
                     edge = path[i + 1]
                     out_node = out_nodes[out_edges.index(edge)]
-                    paths.append((path, in_node, out_node, weight))
+                    paths.append((path, in_node, out_node, weight, j))
                     break
 
         routings = dict()
-        print("Paths to route over cycle (and in node, out node, and"
-              " weight)")
+        print("Paths to route over cycle (and in node, out node, weight, idx)")
         print(paths)
         unique_start_end_pairs = list(set([(x[1], x[2]) for x in
                                       paths]))
-        pair_indices = dict()
+        pair_indices = defaultdict(list)
         # only consider pairs that have different start/end
         for pair in unique_start_end_pairs:
             if pair not in routings:
@@ -261,12 +261,10 @@ class AdjList:
                     routings[pair] = self.get_all_routings(pair[0],
                                                            pair[1],
                                                            scc)
-                    # pair_indices[pair] is a list of indices of paths in
-                    # solution via this pair
-                    pair_indices[pair] = [i for i, x in
-                                          enumerate(paths) if
-                                          x[1] == pair[0] and x[2] ==
-                                          pair[1]]
+                    # get indices of paths with this start/end
+                    for path in paths:
+                        if path[1] == pair[0] and path[2] == pair[1]:
+                            pair_indices[pair].append(path[4])
 
         # routings has all needed routings for this cycle.
         print("All routings are:", routings)
@@ -277,9 +275,8 @@ class AdjList:
                              for item in sublist]))
         print("scc arcs", scc_arcs)
         weights = []
-        for pair in pair_indices:
-            weight_list = [x[3] for i, x in enumerate(paths)
-                           if i in pair_indices[pair]]
+        for pair, indices in pair_indices.items():
+            weight_list = [x[1] for i, x in enumerate(pathset) if i in indices]
             weights.append(weight_list)
         print("All weights are:", weights)
         # for each pair of start/end, create a product iterable over the
