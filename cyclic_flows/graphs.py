@@ -206,14 +206,18 @@ class AdjList:
         return routings
 
     def test_scc_flow_cover(self, scc_arcs, routing, weights):
+        """
+        Return whether the given routing and weights correctly covers the flow
+        over the scc edges.
+        """
         recovered_arc_weights = defaultdict(int)
         for start_end_pair, weight_list in zip(routing, weights):
             for path, weight in zip(start_end_pair, weight_list):
                 for arc in path:
                     recovered_arc_weights[arc] += weight
         for arc in scc_arcs:
-            print("Arc {} has recovered weight {} and actual weight {}".format(
-                arc, recovered_arc_weights[arc], self.arc_info[arc]["weight"]))
+            # print("Arc {} has recovered weight {} and actual weight {}".format(
+            #     arc, recovered_arc_weights[arc], self.arc_info[arc]["weight"]))
             if recovered_arc_weights[arc] != self.arc_info[arc]["weight"]:
                 return False
         print("This routing works")
@@ -287,7 +291,7 @@ class AdjList:
                     for pair in routings]
         for routing in itertools.product(*products):
             # check whether the routing is viable
-            print("checking whether routing is viable:", routing)
+            # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
                 routing = [item for sublist in routing for item in sublist]
