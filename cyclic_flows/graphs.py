@@ -191,6 +191,29 @@ class AdjList:
         if this_route:
             this_route.pop()
 
+    def dfs_scc_arcs(self, v, visited, scc, arcs):
+        """
+        Traverse the SCC using DFS in order to find all arc ids in the SCC.
+        arcs is a set of arc_ids
+        """
+        visited[v] = True
+        out_arcs = [x for x in self.out_arcs_lists[v]
+                    if self.arc_info[x]["destin"] in scc]
+        arcs.extend(out_arcs)
+        for out_arc in out_arcs:
+            u = self.arc_info[out_arc]["destin"]
+            if not visited[u]:
+                self.dfs_scc_arcs(u, visited, scc, arcs)
+
+    def get_scc_arcs(self, scc):
+        """Return a set of arc ids for edges in this this scc."""
+        arcs = []
+        visited = [False] * (max(scc) + 1)
+        self.dfs_scc_arcs(scc[0], visited, scc, arcs)
+        # we shouldn't add any arcs twice. but assert anyway.
+        assert len(arcs) == len(set(arcs))
+        return arcs
+
     def get_all_routings(self, start, end, scc):
         """
         Produce all routings from start node to end node through a scc
@@ -216,8 +239,12 @@ class AdjList:
                 for arc in path:
                     recovered_arc_weights[arc] += weight
         for arc in scc_arcs:
-            # print("Arc {} has recovered weight {} and actual weight {}".format(
-            #     arc, recovered_arc_weights[arc], self.arc_info[arc]["weight"]))
+            # print("Arc {} has recovered weight {} and actual weight {}".
+            #       format(
+            #           arc,
+            #           recovered_arc_weights[arc],
+            #           self.arc_info[arc]["weight"]
+            #       ))
             if recovered_arc_weights[arc] != self.arc_info[arc]["weight"]:
                 return False
         print("This routing works")
@@ -270,13 +297,9 @@ class AdjList:
                         if path[1] == pair[0] and path[2] == pair[1]:
                             pair_indices[pair].append(path[4])
 
-        # routings has all needed routings for this cycle.
         print("All routings are:", routings)
         print("All pair indices are:", pair_indices)
-        scc_arcs = list(set([item for sublist in
-                             [item for sublist in routings.values()
-                              for item in sublist]
-                             for item in sublist]))
+        scc_arcs = self.get_scc_arcs(scc)
         print("scc arcs", scc_arcs)
         weights = []
         for pair, indices in pair_indices.items():
@@ -289,7 +312,9 @@ class AdjList:
         products = [list(itertools.
                     product(routings[pair], repeat=len(pair_indices[pair])))
                     for pair in routings]
+        counter = 1
         for routing in itertools.product(*products):
+            counter += 1
             # check whether the routing is viable
             # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
@@ -298,6 +323,7 @@ class AdjList:
                 pair_indices = [item for sublist in pair_indices.values()
                                 for item in sublist]
                 return routing, pair_indices, in_edges
+        print("Checked {} routings but none worked.".format(counter))
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath
