@@ -286,7 +286,7 @@ class AdjList:
         for pair in unique_start_end_pairs:
             if pair not in routings:
                 if pair[0] != pair[1]:
-                    print("processing start/end", pair)
+                    # print("processing start/end", pair)
                     # routings[pair] is a list of all routings through scc via
                     # this pair
                     routings[pair] = self.get_all_routings(pair[0],
@@ -313,19 +313,24 @@ class AdjList:
                     product(routings[pair], repeat=len(pair_indices[pair])))
                     for pair in routings]
         counter = 1
+        valid_routings = []
         for routing in itertools.product(*products):
             counter += 1
             # check whether the routing is viable
             # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
-                print("Checked {} routings before finding one that works.".
+                print("Routing number {} works.".
                       format(counter))
                 routing = [item for sublist in routing for item in sublist]
                 pair_indices = [item for sublist in pair_indices.values()
                                 for item in sublist]
-                return routing, pair_indices, in_edges
-        print("Checked {} routings but none worked.".format(counter))
+                valid_routings.append((routing, pair_indices, in_edges))
+        if valid_routings:
+            print("Checked {} total routings.".format(counter))
+            return valid_routings
+        else:
+            print("Checked {} routings but none worked.".format(counter))
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath

@@ -541,7 +541,8 @@ class SolvedConstr:
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         solution_paths_all = recover_paths(self.instance, self.path_weights)
-        # print("len of all solution paths returned", len(solution_paths_all))
+        print("\nProcessing a solved constraint system.")
+        print("len of all solution paths returned", len(solution_paths_all))
         # only look into cycles if there are cycles
         sol_paths = []
         if len([x for x in self.instance.sccs if len(x) > 1]) == 0:
@@ -551,55 +552,57 @@ class SolvedConstr:
             print("Processing cycles...")
             for pathset in solution_paths_all:
                 new_pathset = pathset
-                print("\nProcessing solution pathset", new_pathset)
+                print("Processing solution pathset", new_pathset)
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
-                    result = self.instance.cyclic_graph.\
+                    valid_routings = self.instance.cyclic_graph.\
                         route_cycle(c, self.instance.graph, new_pathset)
-                    if result:
+                    if valid_routings:
                         # this scc is can be covered by this pathest
                         # incorporate into path
-                        routing, indices, in_edges = result
-                        print("Found a routing through scc:", result[0])
-                        print("in edges", in_edges)
-                        replacement_pathset = []
-                        for i, path in enumerate(new_pathset):
-                            print("Path ", i, path)
-                            try:
-                                routing_to_insert = routing[indices.index(i)]
-                                print("### routing to insert",
-                                      routing_to_insert)
-                                print("### in edges", in_edges)
-                                in_edge = list(set(in_edges) & set(path[0]))[0]
-                                print("### in edge", in_edge)
-                                in_edge_index = path[0].index(in_edge)
-                                print("### in edge index", in_edge_index)
-                                first_half = path[0][:in_edge_index + 1]
-                                print("### first half", first_half)
-                                second_half = path[0][in_edge_index + 1:]
-                                print("### second half", second_half)
-                                new_path = first_half + \
-                                    tuple(routing_to_insert) + second_half
-                                replacement_pathset.append((new_path, path[1]))
-                            except (ValueError, IndexError):
-                                # this path enters and leaves by the same node
-                                # so it doesn't need to be changed (ValueError)
-                                # or this path doesn't even go through the SCC
-                                # (IndexError)
-                                print("### path does not need to be changed")
-                                replacement_pathset.append(path)
-                        print("##### After routing paths, new_pathset is",
-                              replacement_pathset)
+                        for result in valid_routings:
+                            routing, indices, in_edges = result
+                            print("Found a routing through scc:", result[0])
+                            print("in edges", in_edges)
+                            replacement_pathset = []
+                            for i, path in enumerate(new_pathset):
+                                print("Path ", i, path)
+                                try:
+                                    routing_to_insert = routing[indices.index(i)]
+                                    print("### routing to insert",
+                                          routing_to_insert)
+                                    print("### in edges", in_edges)
+                                    in_edge = list(set(in_edges) & set(path[0]))[0]
+                                    print("### in edge", in_edge)
+                                    in_edge_index = path[0].index(in_edge)
+                                    print("### in edge index", in_edge_index)
+                                    first_half = path[0][:in_edge_index + 1]
+                                    print("### first half", first_half)
+                                    second_half = path[0][in_edge_index + 1:]
+                                    print("### second half", second_half)
+                                    new_path = first_half + \
+                                        tuple(routing_to_insert) + second_half
+                                    replacement_pathset.append((new_path, path[1]))
+                                except (ValueError, IndexError):
+                                    # this path enters and leaves by the same node
+                                    # so it doesn't need to be changed (ValueError)
+                                    # or this path doesn't even go through the SCC
+                                    # (IndexError)
+                                    print("### path does not need to be changed")
+                                    replacement_pathset.append(path)
+                            print("##### After routing paths, new_pathset is",
+                                  replacement_pathset)
                     else:
                         # this pathset doesn't work, so stop considering it
                         print("This pathset doesn't work")
                         break
-
                     new_pathset = replacement_pathset
                 else:  # executes if we processed all sccs successfully
                     sol_paths.append(new_pathset)
 
-        if sol_paths:
-            print("sol paths is", sol_paths)
+        print("There are {} possible solutions. Now check to see if any" +
+              "satisfy the subpath constraints.")
+        for sol_path in sol_paths:
+            print("Possible solution is", sol_path)
             # at this point, we've got paths in the reduced graph, not the scc
             # graph. so we should switch self.instance.graph to be
             # self.instance.cyclic_graph.
@@ -634,6 +637,7 @@ class SolvedConstr:
                         print("doesn't meet subpath demand")
                     else:  # executes if all subpath constraint satisfied
                         return paths, weight_vec
+
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
