@@ -591,13 +591,15 @@ class SolvedConstr:
                               replacement_pathset)
                     else:
                         # this pathset doesn't work, so stop considering it
+                        print("This pathset doesn't work")
                         break
+
                     new_pathset = replacement_pathset
                 else:  # executes if we processed all sccs successfully
                     sol_paths.append(new_pathset)
-                    break  # we found a pathset that can be extended, so done
 
         if sol_paths:
+            print("sol paths is", sol_paths)
             # at this point, we've got paths in the reduced graph, not the scc
             # graph. so we should switch self.instance.graph to be
             # self.instance.cyclic_graph.
@@ -622,17 +624,16 @@ class SolvedConstr:
                 for (L, d) in zip(self.instance.graph.subpath_constraints,
                                   self.instance.graph.subpath_demands):
                     total_coverage = 0
-                    # print("constraint is", L)
-                    # print("demand is", d)
+                    print("constraint is", L)
+                    print("demand is", d)
                     for (path, weight) in zip(paths, weight_vec):
                         if str(L)[1:-1] in str(path)[1:-1]:
                             total_coverage += weight
                     # if we don't meet demand, this solution paths is not good
                     if d > total_coverage:
-                        # print("doesn't meet subpath demand")
-                        break
-                else:  # executes if all subpath constraint satisfied
-                    return paths, weight_vec
+                        print("doesn't meet subpath demand")
+                    else:  # executes if all subpath constraint satisfied
+                        return paths, weight_vec
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

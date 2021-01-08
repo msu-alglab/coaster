@@ -319,6 +319,8 @@ class AdjList:
             # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
+                print("Checked {} routings before finding one that works.".
+                      format(counter))
                 routing = [item for sublist in routing for item in sublist]
                 pair_indices = [item for sublist in pair_indices.values()
                                 for item in sublist]
