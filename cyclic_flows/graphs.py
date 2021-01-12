@@ -247,7 +247,6 @@ class AdjList:
             #       ))
             if recovered_arc_weights[arc] != self.arc_info[arc]["weight"]:
                 return False
-        print("This routing works")
         return True
 
     def route_cycle(self, scc, og_graph, pathset):
@@ -259,7 +258,7 @@ class AdjList:
         * og_graph: a non-compressed version of the cyclic graph
         * pathset: a set of paths decomposing this graph
         """
-        print("processing cycle", scc)
+        print("## processing cycle", scc)
         v = scc[0]
         in_edges = og_graph.in_arcs_lists[v]
         in_nodes = [self.arc_info[e]["destin"] for e in in_edges]
@@ -277,8 +276,8 @@ class AdjList:
                     break
 
         routings = dict()
-        print("Paths to route over cycle (and in node, out node, weight, idx)")
-        print(paths)
+        print("## Paths to route over cycle (in node, out node, weight, idx)",
+              paths)
         unique_start_end_pairs = list(set([(x[1], x[2]) for x in
                                       paths]))
         pair_indices = defaultdict(list)
@@ -296,23 +295,19 @@ class AdjList:
                     for path in paths:
                         if path[1] == pair[0] and path[2] == pair[1]:
                             pair_indices[pair].append(path[4])
-
-        print("All routings are:", routings)
-        print("All pair indices are:", pair_indices)
+        print("## routings is:", routings)
         scc_arcs = self.get_scc_arcs(scc)
-        print("scc arcs", scc_arcs)
         weights = []
         for pair, indices in pair_indices.items():
             weight_list = [x[1] for i, x in enumerate(pathset) if i in indices]
             weights.append(weight_list)
-        print("All weights are:", weights)
         # for each pair of start/end, create a product iterable over the
         # routings over the start/end repeated the number of times the
         # start/end pair occurs in this pathset
         products = [list(itertools.
                     product(routings[pair], repeat=len(pair_indices[pair])))
                     for pair in routings]
-        counter = 1
+        counter = 0
         valid_routings = []
         for routing in itertools.product(*products):
             counter += 1
@@ -320,17 +315,18 @@ class AdjList:
             # print("checking whether routing is viable:", routing)
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
-                print("Routing number {} works.".
+                print("## Routing combo number {} works.".
                       format(counter))
                 routing = [item for sublist in routing for item in sublist]
-                pair_indices = [item for sublist in pair_indices.values()
-                                for item in sublist]
-                valid_routings.append((routing, pair_indices, in_edges))
+                these_pair_indices = [item for sublist in pair_indices.values()
+                                      for item in sublist]
+                valid_routings.append((routing, these_pair_indices, in_edges))
         if valid_routings:
-            print("Checked {} total routings.".format(counter))
+            print("## Checked {} total routing combos.".format(counter))
+            print("## Valid routings through cycle", scc, ":", valid_routings)
             return valid_routings
         else:
-            print("Checked {} routings but none worked.".format(counter))
+            print("## Checked {} routings but none worked.".format(counter))
 
     def scc_contracted(self, sccs):
         """Return a copy of this graph contracted according to its subpath

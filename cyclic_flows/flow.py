@@ -540,19 +540,19 @@ class SolvedConstr:
     def route_cycles_and_satisfy_subpath_constraints(self, graph):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
-        solution_paths_all = recover_paths(self.instance, self.path_weights)
-        print("\nProcessing a solved constraint system.")
-        print("len of all solution paths returned", len(solution_paths_all))
+        solution_pathsets_all = recover_paths(self.instance, self.path_weights)
+        print("\nProcessing a solved constraint system with {} paths.".
+              format(len(solution_pathsets_all)))
         # only look into cycles if there are cycles
-        sol_paths = []
+        sol_pathsets = []
         if len([x for x in self.instance.sccs if len(x) > 1]) == 0:
             print("No cycles to process.")
-            sol_paths = solution_paths_all
+            sol_pathsets = solution_pathsets_all
         else:
-            print("Processing cycles...")
-            for pathset in solution_paths_all:
+            for pathset in solution_pathsets_all:
                 new_pathset = pathset
-                print("Processing solution pathset", new_pathset)
+                print("Trying to route solution pathset over cycles",
+                      new_pathset)
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
                     valid_routings = self.instance.cyclic_graph.\
                         route_cycle(c, self.instance.graph, new_pathset)
@@ -561,24 +561,24 @@ class SolvedConstr:
                         # incorporate into path
                         for result in valid_routings:
                             routing, indices, in_edges = result
-                            print("Found a routing through scc:", result[0])
-                            print("in edges", in_edges)
+                            print("#### Incorporating routing through scc:", result[0])
+                            print("#### in edges", in_edges)
                             replacement_pathset = []
                             for i, path in enumerate(new_pathset):
-                                print("Path ", i, path)
+                                print("###### Path ", i, path)
                                 try:
                                     routing_to_insert = routing[indices.index(i)]
-                                    print("### routing to insert",
+                                    print("###### routing to insert",
                                           routing_to_insert)
-                                    print("### in edges", in_edges)
+                                    print("###### in edges", in_edges)
                                     in_edge = list(set(in_edges) & set(path[0]))[0]
-                                    print("### in edge", in_edge)
+                                    print("###### in edge", in_edge)
                                     in_edge_index = path[0].index(in_edge)
-                                    print("### in edge index", in_edge_index)
+                                    print("###### in edge index", in_edge_index)
                                     first_half = path[0][:in_edge_index + 1]
-                                    print("### first half", first_half)
+                                    print("###### first half", first_half)
                                     second_half = path[0][in_edge_index + 1:]
-                                    print("### second half", second_half)
+                                    print("###### second half", second_half)
                                     new_path = first_half + \
                                         tuple(routing_to_insert) + second_half
                                     replacement_pathset.append((new_path, path[1]))
@@ -587,9 +587,9 @@ class SolvedConstr:
                                     # so it doesn't need to be changed (ValueError)
                                     # or this path doesn't even go through the SCC
                                     # (IndexError)
-                                    print("### path does not need to be changed")
+                                    print("###### path does not need to be changed")
                                     replacement_pathset.append(path)
-                            print("##### After routing paths, new_pathset is",
+                            print("###### After routing paths, new_pathset is",
                                   replacement_pathset)
                     else:
                         # this pathset doesn't work, so stop considering it
@@ -597,33 +597,36 @@ class SolvedConstr:
                         break
                     new_pathset = replacement_pathset
                 else:  # executes if we processed all sccs successfully
-                    sol_paths.append(new_pathset)
+                    print("Successfully processed all cycles.")
+                    sol_pathsets.append(new_pathset)
 
-        print("There are {} possible solutions. Now check to see if any" +
-              "satisfy the subpath constraints.")
-        for sol_path in sol_paths:
-            print("Possible solution is", sol_path)
+        print("There are {} possible solutions. Now check if any".
+              format(len(sol_pathsets)) + " satisfy the subpath constraints.")
+        for sol_pathset in sol_pathsets:
+            print("## Checking", sol_pathset)
             # at this point, we've got paths in the reduced graph, not the scc
             # graph. so we should switch self.instance.graph to be
             # self.instance.cyclic_graph.
             self.instance.graph = self.instance.cyclic_graph
 
             # convert contracted paths to full paths
-            for solution_paths in sol_paths:
-                print(solution_paths)
-                weight_vec = []
-                paths = []
-                for path_deq, weight in solution_paths:
-                    real_path = []
-                    for arc in path_deq:
-                        real_path.extend(self.instance.graph.mapping[arc])
-                    node_seq = [graph.source()]
-                    for arc in real_path:
-                        node_seq.append(graph.arc_info[arc]['destin'])
-                    weight_vec.append(weight)
-                    paths.append(node_seq)
-                print("recovered paths are", paths)
+            weight_vec = []
+            paths = []
+            for path_deq, weight in sol_pathset:
+                real_path = []
+                for arc in path_deq:
+                    real_path.extend(self.instance.graph.mapping[arc])
+                node_seq = [graph.source()]
+                for arc in real_path:
+                    node_seq.append(graph.arc_info[arc]['destin'])
+                weight_vec.append(weight)
+                paths.append(node_seq)
+            print("recovered paths are", paths)
 
+            # there might not be any subpath constraints
+            if not self.instance.graph.subpath_constraints:
+                return paths, weight_vec
+            else:
                 for (L, d) in zip(self.instance.graph.subpath_constraints,
                                   self.instance.graph.subpath_demands):
                     total_coverage = 0

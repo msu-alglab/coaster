@@ -96,7 +96,7 @@ def find_opt_size(instance, maxtime):
                     break
                 instance.try_larger_k()
             elapsed = time.time() - start
-            print("# Solution time was {:.2f} seconds".format(elapsed))
+            print("\n# Solution time was {:.2f} seconds".format(elapsed))
             return solution, elapsed
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
