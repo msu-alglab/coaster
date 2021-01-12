@@ -4,6 +4,7 @@
 # under the three-clause BSD license; see LICENSE.
 #
 import copy
+import time
 from collections import defaultdict
 import itertools
 
@@ -295,7 +296,13 @@ class AdjList:
                     for path in paths:
                         if path[1] == pair[0] and path[2] == pair[1]:
                             pair_indices[pair].append(path[4])
-        print("## routings is:", routings)
+        print("## routing sizes:")
+        num_products = 1
+        for key, val in routings.items():
+            print("##  In/out node: {}; num. routings: {}".format(key,
+                                                                  len(val)))
+            num_products *= len(val)
+        print("## there should be {} routings to check".format(num_products))
         scc_arcs = self.get_scc_arcs(scc)
         weights = []
         for pair, indices in pair_indices.items():
@@ -309,10 +316,14 @@ class AdjList:
                     for pair in routings]
         counter = 0
         valid_routings = []
+        routing_check_start_time = time.time()
         for routing in itertools.product(*products):
             counter += 1
             # check whether the routing is viable
             # print("checking whether routing is viable:", routing)
+            if counter % 1000000 == 0:
+                print("Checked {} routings...({} seconds)".
+                      format(counter, time.time() - routing_check_start_time))
             works = self.test_scc_flow_cover(scc_arcs, routing, weights)
             if works:
                 print("## Routing combo number {} works.".

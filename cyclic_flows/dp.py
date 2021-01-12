@@ -6,6 +6,7 @@
 #
 # python libs
 from collections import defaultdict, deque
+import time
 
 # local imports
 from cyclic_flows.flow import Constr, SolvedConstr, PathConf
@@ -21,6 +22,8 @@ def solve(instance, og_graph, silent=True, guessed_weights=None):
     solution exists with each None replaced by a integer that respects the
     sorted order of the tuple.
     """
+    start_time = time.time()
+    print("Guessed weights are", guessed_weights)
     graph = instance.graph
     k = instance.k
 
@@ -93,6 +96,8 @@ def solve(instance, og_graph, silent=True, guessed_weights=None):
 
     # At the end, we may have some SolvedConstr objects in the table and some
     # Constr objects, which are not full rank.
+    print("It took {} seconds to generate SolvedConstr objects".
+          format(time.time() - start_time))
     for key in new_table:
         for sys in new_table[key]:
             # we need to pass in the original graph in order to recover paths

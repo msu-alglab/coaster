@@ -10,6 +10,7 @@ import itertools
 import numpy as np
 from scipy.optimize import linprog
 import copy
+import time
 # local imports
 from cyclic_flows.graphs import convert_to_top_sorting, compute_cuts,\
                             compute_edge_cuts
@@ -540,6 +541,7 @@ class SolvedConstr:
     def route_cycles_and_satisfy_subpath_constraints(self, graph):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
+        start_time = time.time()
         solution_pathsets_all = recover_paths(self.instance, self.path_weights)
         print("\nProcessing a solved constraint system with {} paths.".
               format(len(solution_pathsets_all)))
@@ -600,8 +602,11 @@ class SolvedConstr:
                     print("Successfully processed all cycles.")
                     sol_pathsets.append(new_pathset)
 
-        print("There are {} possible solutions. Now check if any".
-              format(len(sol_pathsets)) + " satisfy the subpath constraints.")
+        if sol_pathsets:
+            print("There are {} possible solutions. ".format(len(sol_pathsets))
+                  + "Now check if any satisfy the subpath constraints.")
+        print("It took {} seconds to find valid routings through sccs".
+              format(time.time() - start_time))
         for sol_pathset in sol_pathsets:
             print("## Checking", sol_pathset)
             # at this point, we've got paths in the reduced graph, not the scc
