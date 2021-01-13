@@ -647,6 +647,7 @@ class SolvedConstr:
                     print("total coverage is", total_coverage)
                     if d > total_coverage:
                         print("doesn't meet subpath demand")
+                        break
                 # executes if all subpath constraint satisfied
                 else:
                     return paths, weight_vec
