@@ -81,7 +81,7 @@ def index_range(raw):
     return indices
 
 
-def find_opt_size(instance, maxtime):
+def find_opt_size(instance, maxtime, max_k):
     """Find the optimum size of a flow decomposition."""
     if maxtime is None:
         maxtime = -1
@@ -90,6 +90,9 @@ def find_opt_size(instance, maxtime):
     try:
         with timeout(seconds=maxtime):
             while True:
+                # if we're just running through large k vals, stop
+                if max_k:
+                    assert instance.k <= max_k
                 print("\n# \tTrying to solve with k = {}".format(instance.k))
                 solution = solve(instance, graph, silent=True)
                 if bool(solution):
@@ -101,6 +104,9 @@ def find_opt_size(instance, maxtime):
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
         return set(), maxtime
+    except AssertionError:
+        print("Reached max k after {} seconds".format(elapsed))
+        return set(), elapsed
 
 
 if __name__ == "__main__":
@@ -136,6 +142,8 @@ if __name__ == "__main__":
                         " do not recover the paths.", action='store_true')
     parser.add_argument("--create_graph_pics", help="Generate PDF of graphs",
                         action='store_true')
+    parser.add_argument("--max_k", help="Largest k to consider for any graph",
+                        type=int)
 
     args = parser.parse_args()
 
@@ -148,6 +156,12 @@ if __name__ == "__main__":
         print("# Timeout is set to", maxtime)
     else:
         print("# No timeout set")
+
+    max_k = args.max_k
+    if max_k:
+        print("# Max k is set to", max_k)
+    else:
+        print("# No max_k set")
 
     recover = not args.no_recovery
     if recover:
@@ -248,7 +262,7 @@ if __name__ == "__main__":
 
             k_cutset = instance.max_edge_cut_size
 
-            solution, time_weights = find_opt_size(instance, maxtime)
+            solution, time_weights = find_opt_size(instance, maxtime, max_k)
 
             # recover the paths in an optimal solution
             if bool(solution) and recover:

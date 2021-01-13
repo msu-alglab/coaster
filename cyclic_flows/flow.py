@@ -630,8 +630,11 @@ class SolvedConstr:
 
             # there might not be any subpath constraints
             if not self.instance.graph.subpath_constraints:
+                print("No subpath constraints")
                 return paths, weight_vec
             else:
+                print("There are {} subpath constraints to check".
+                      format(len(self.instance.graph.subpath_constraints)))
                 for (L, d) in zip(self.instance.graph.subpath_constraints,
                                   self.instance.graph.subpath_demands):
                     total_coverage = 0
@@ -641,11 +644,12 @@ class SolvedConstr:
                         if str(L)[1:-1] in str(path)[1:-1]:
                             total_coverage += weight
                     # if we don't meet demand, this solution paths is not good
+                    print("total coverage is", total_coverage)
                     if d > total_coverage:
                         print("doesn't meet subpath demand")
-                    else:  # executes if all subpath constraint satisfied
-                        return paths, weight_vec
-
+                # executes if all subpath constraint satisfied
+                else:
+                    return paths, weight_vec
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

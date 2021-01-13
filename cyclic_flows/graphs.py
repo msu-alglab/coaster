@@ -560,6 +560,17 @@ def test_flow_cover(graph, paths, weights):
             print("SOLUTION INCORRECT; arc {} has flow {},"
                   " soln {}".format(arc, true_flow, recovered_flow))
         assert true_flow == recovered_flow
+    # Check that every subpath constraint is satisfied
+    for sc, demand in zip(graph.subpath_constraints, graph.subpath_demands):
+        sc_coverage = 0
+        for path, weight in zip(paths, weights):
+            if str(sc)[1:-1] in str(path)[1:-1]:
+                sc_coverage += weight
+        if sc_coverage < demand:
+            out = "SOLUTION INCORRECT; sc {} with demand {} has coverage {}".\
+                format(sc, demand, sc_coverage)
+            print(out)
+        assert sc_coverage >= demand
 
 
 def convert_to_top_sorting(graph):
