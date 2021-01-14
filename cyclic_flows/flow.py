@@ -538,6 +538,40 @@ class SolvedConstr:
         else:
             return None
 
+    def get_replacement_routing(self, new_pathset, result):
+        routing, indices, in_edges = result
+        print("#### Incorporating routing through scc:", result[0])
+        print("#### in edges", in_edges)
+        replacement_pathset = []
+        for i, path in enumerate(new_pathset):
+            print("###### Path ", i, path)
+            try:
+                routing_to_insert = routing[indices.index(i)]
+                print("###### routing to insert",
+                      routing_to_insert)
+                print("###### in edges", in_edges)
+                in_edge = list(set(in_edges) & set(path[0]))[0]
+                print("###### in edge", in_edge)
+                in_edge_index = path[0].index(in_edge)
+                print("###### in edge index", in_edge_index)
+                first_half = path[0][:in_edge_index + 1]
+                print("###### first half", first_half)
+                second_half = path[0][in_edge_index + 1:]
+                print("###### second half", second_half)
+                new_path = first_half + \
+                    tuple(routing_to_insert) + second_half
+                replacement_pathset.append((new_path, path[1]))
+            except (ValueError, IndexError):
+                # this path enters and leaves by the same node
+                # so it doesn't need to be changed (ValueError)
+                # or this path doesn't even go through the SCC
+                # (IndexError)
+                print("###### path does not need to be changed")
+                replacement_pathset.append(path)
+        print("###### After routing paths, new_pathset is",
+              replacement_pathset)
+        return replacement_pathset
+
     def route_cycles_and_satisfy_subpath_constraints(self, graph):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
@@ -562,37 +596,8 @@ class SolvedConstr:
                         # this scc is can be covered by this pathest
                         # incorporate into path
                         for result in valid_routings:
-                            routing, indices, in_edges = result
-                            print("#### Incorporating routing through scc:", result[0])
-                            print("#### in edges", in_edges)
-                            replacement_pathset = []
-                            for i, path in enumerate(new_pathset):
-                                print("###### Path ", i, path)
-                                try:
-                                    routing_to_insert = routing[indices.index(i)]
-                                    print("###### routing to insert",
-                                          routing_to_insert)
-                                    print("###### in edges", in_edges)
-                                    in_edge = list(set(in_edges) & set(path[0]))[0]
-                                    print("###### in edge", in_edge)
-                                    in_edge_index = path[0].index(in_edge)
-                                    print("###### in edge index", in_edge_index)
-                                    first_half = path[0][:in_edge_index + 1]
-                                    print("###### first half", first_half)
-                                    second_half = path[0][in_edge_index + 1:]
-                                    print("###### second half", second_half)
-                                    new_path = first_half + \
-                                        tuple(routing_to_insert) + second_half
-                                    replacement_pathset.append((new_path, path[1]))
-                                except (ValueError, IndexError):
-                                    # this path enters and leaves by the same node
-                                    # so it doesn't need to be changed (ValueError)
-                                    # or this path doesn't even go through the SCC
-                                    # (IndexError)
-                                    print("###### path does not need to be changed")
-                                    replacement_pathset.append(path)
-                            print("###### After routing paths, new_pathset is",
-                                  replacement_pathset)
+                            replacement_pathset = self.get_replacement_pathset(
+                                new_pathset, result)
                     else:
                         # this pathset doesn't work, so stop considering it
                         print("This pathset doesn't work")
