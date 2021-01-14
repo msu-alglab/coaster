@@ -595,6 +595,7 @@ class SolvedConstr:
                 cycle_counter = 0
                 for c in [x for x in self.instance.sccs if len(x) > 1]:
                     cycle_counter += 1
+                    print("Processing cycle number", cycle_counter)
                     valid_routings = self.instance.cyclic_graph.\
                         route_cycle(c, self.instance.graph, pathset)
                     if valid_routings:
@@ -616,7 +617,6 @@ class SolvedConstr:
                 else:  # executes if we processed all sccs successfully
                     print("Successfully processed all cycles.")
                     sol_pathsets.extend(this_pathset_sols)
-                assert cycle_counter == 1
 
         if sol_pathsets:
             print("There are {} possible solutions. ".format(len(sol_pathsets))
