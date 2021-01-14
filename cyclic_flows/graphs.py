@@ -334,7 +334,8 @@ class AdjList:
                 valid_routings.append((routing, these_pair_indices, in_edges))
         if valid_routings:
             print("## Checked {} total routing combos.".format(counter))
-            print("## Valid routings through cycle", scc, ":", valid_routings)
+            print("## Found {} valid routings through cycle {}".format(
+                len(valid_routings), scc))
             return valid_routings
         else:
             print("## Checked {} routings but none worked.".format(counter))

@@ -98,6 +98,7 @@ def solve(instance, og_graph, silent=True, guessed_weights=None):
     # Constr objects, which are not full rank.
     print("It took {} seconds to generate SolvedConstr objects".
           format(time.time() - start_time))
+    print(new_table)
     for key in new_table:
         for sys in new_table[key]:
             # we need to pass in the original graph in order to recover paths
