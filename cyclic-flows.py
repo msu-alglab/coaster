@@ -81,8 +81,9 @@ def index_range(raw):
     return indices
 
 
-def find_opt_size(instance, maxtime, max_k):
-    """Find the optimum size of a flow decomposition."""
+def find_opt_size(instance, maxtime, max_k, stats_out):
+    """Find the optimum size of a flow decomposition. stats_out is a file for
+    writing stats about this instance."""
     if maxtime is None:
         maxtime = -1
     print("Searching for minimum-sized set of weights, timeout set at {}"
@@ -94,7 +95,7 @@ def find_opt_size(instance, maxtime, max_k):
                 if max_k:
                     assert instance.k <= max_k
                 print("\n# \tTrying to solve with k = {}".format(instance.k))
-                solution = solve(instance, graph, silent=True)
+                solution = solve(instance, graph, stats_out, silent=False)
                 if bool(solution):
                     break
                 instance.try_larger_k()
@@ -150,6 +151,10 @@ if __name__ == "__main__":
     graph_file = args.file
     filename = path.basename(graph_file)
     truth_file = "{}.truth".format(path.splitext(graph_file)[0])
+    stats_file = graph_file.split("/")[-1] + "_stats.txt"
+    stats_out = open(stats_file, "w")
+    stats_out.write("filename,graphname,n,m,contracted_n,contracted_m," +
+                    "scc_n,scc_m,num_cycles,\n")
 
     maxtime = args.timeout
     if maxtime:
@@ -212,9 +217,14 @@ if __name__ == "__main__":
         weights = []
         time_weights = None
         time_path = None
+
         print("\nFile {} instance {} name {} with n = {}, m = {}, and truth = "
               "{}:".format(filename, graphnumber, graphname, n_input,
                            m_input, k if k else "?"), flush=True)
+        # graphname is graphnumber-fileindex in our instances, so it can be
+        # used to join output with groundtruth
+        stats_out.write("{},{},{},{},".format(filename, graphname, n_input,
+                                              m_input))
 
         if args.print_contracted:
             print("Original graph is:")
@@ -224,6 +234,8 @@ if __name__ == "__main__":
         reduced, mapping = graph.contracted()
         # reduced is the graph after contractions;
         # mapping enables mapping paths on reduced back to paths in graph
+        stats_out.write("{},{},".format(reduced.num_nodes(),
+                                        reduced.num_edges()))
         if args.print_contracted:
             print("Contracted graph is:")
             reduced.print_out()
@@ -232,6 +244,8 @@ if __name__ == "__main__":
         # create a graph with all strongly connected components contracted to
         # single vertices
         scc_reduced, sccs = reduced.scc()
+        stats_out.write("{},{},{}".format(
+            scc_reduced.num_nodes(), scc_reduced.num_edges(), len(sccs) - 2))
         if args.print_contracted:
             print("sccs are", sccs)
             print("SCC graph is:")
@@ -262,7 +276,8 @@ if __name__ == "__main__":
 
             k_cutset = instance.max_edge_cut_size
 
-            solution, time_weights = find_opt_size(instance, maxtime, max_k)
+            solution, time_weights = find_opt_size(instance, maxtime, max_k,
+                                                   stats_out)
 
             # recover the paths in an optimal solution
             if bool(solution) and recover:
@@ -289,4 +304,6 @@ if __name__ == "__main__":
                             k_improve, k_opt, time_weights,
                             ))
             print("weights\t", *[w for w in weights])
+        stats_out.write("\n")
         print("Finished instance.\n")
+    stats_out.close()

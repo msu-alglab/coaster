@@ -131,6 +131,12 @@ class AdjList:
             for (v, flow) in self.adj_list[u]:
                 yield (u, v, flow)
 
+    def nodes(self):
+        return self.adj_list.keys()
+
+    def num_nodes(self):
+        return len(self.nodes())
+
     def num_edges(self):
         return sum(1 for _ in self.edges())
 

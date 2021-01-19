@@ -59,9 +59,10 @@ def is_feasible(weights, flow, max_weight):
     return sum(min_weights) <= flow and sum(max_weights) >= flow
 
 
-def solve(instance, og_graph, silent=True, max_weight_lower=1,
+def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
           max_weight_upper=float('inf'), scoring="sink distance"):
-    """Solve the provided instance of path-flow decomposition."""
+    """Solve the provided instance of path-flow decomposition. Write stats
+    about this instance to stat_out file object."""
     flow = instance.flow
     k = instance.k
 
