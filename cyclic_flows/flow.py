@@ -414,7 +414,8 @@ class Constr:
 
         return res
 
-    def route_cycles_and_satisfy_subpath_constraints(self, og_graph):
+    def route_cycles_and_satisfy_subpath_constraints(self, og_graph,
+                                                     stats_out):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         # see which weights are fixed
@@ -457,7 +458,8 @@ class Constr:
             if len([x for x in weights if x < 1]) > 0:
                 return False
             res = SolvedConstr(weights, self.instance).\
-                route_cycles_and_satisfy_subpath_constraints(og_graph)
+                route_cycles_and_satisfy_subpath_constraints(og_graph,
+                                                             stats_out)
             if res:
                 return res
 
@@ -572,7 +574,7 @@ class SolvedConstr:
               replacement_pathset)
         return replacement_pathset
 
-    def route_cycles_and_satisfy_subpath_constraints(self, graph):
+    def route_cycles_and_satisfy_subpath_constraints(self, graph, stats_out):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         start_time = time.time()
@@ -597,7 +599,7 @@ class SolvedConstr:
                     cycle_counter += 1
                     print("Processing cycle number", cycle_counter)
                     valid_routings = self.instance.cyclic_graph.\
-                        route_cycle(c, self.instance.graph, pathset)
+                        route_cycle(c, self.instance.graph, pathset, stats_out)
                     if valid_routings:
                         # this scc is can be covered by this pathest
                         # incorporate into path

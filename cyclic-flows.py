@@ -151,10 +151,11 @@ if __name__ == "__main__":
     graph_file = args.file
     filename = path.basename(graph_file)
     truth_file = "{}.truth".format(path.splitext(graph_file)[0])
-    stats_file = graph_file.split("/")[-1] + "_stats.txt"
+    stats_file = "stats_files/" + graph_file.split("/")[-1] + "_stats.txt"
     stats_out = open(stats_file, "w")
     stats_out.write("filename,graphname,n,m,contracted_n,contracted_m," +
-                    "scc_n,scc_m,num_cycles,\n")
+                    "scc_n,scc_m,num_cycles,size_of_cycles...,routings_" +
+                    "over_cycle...,\n")
 
     maxtime = args.timeout
     if maxtime:
@@ -244,8 +245,10 @@ if __name__ == "__main__":
         # create a graph with all strongly connected components contracted to
         # single vertices
         scc_reduced, sccs = reduced.scc()
-        stats_out.write("{},{},{}".format(
+        stats_out.write("{},{},{},".format(
             scc_reduced.num_nodes(), scc_reduced.num_edges(), len(sccs) - 2))
+        for scc in sccs[1:-1]:
+            stats_out.write("{},".format(len(scc)))
         if args.print_contracted:
             print("sccs are", sccs)
             print("SCC graph is:")

@@ -256,7 +256,7 @@ class AdjList:
                 return False
         return True
 
-    def route_cycle(self, scc, og_graph, pathset):
+    def route_cycle(self, scc, og_graph, pathset, stats_out):
         """
         Assuming this graph is a cyclic graph, try different routings through
         the given scc, first convert paths, then try to route these paths until
@@ -309,6 +309,7 @@ class AdjList:
                                                                   len(val)))
             num_products *= len(val)
         print("## there should be {} routings to check".format(num_products))
+        stats_out.write("{},".format(num_products))
         scc_arcs = self.get_scc_arcs(scc)
         weights = []
         for pair, indices in pair_indices.items():

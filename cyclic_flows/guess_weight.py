@@ -79,7 +79,7 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
         weights = list(sorted(w for _, w in largest_cut))
         if not silent:
             print("k=size of largest cut, so weights are predetermined.")
-        solutions = solve_dp(instance, og_graph, silent,
+        solutions = solve_dp(instance, og_graph, stats_out, silent,
                              guessed_weights=weights)
         if not silent:
             print("Solutions are:")
@@ -149,7 +149,7 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
 
                 if not silent:
                     print("Trying weights", weights)
-                sol = solve_dp(instance, og_graph,
+                sol = solve_dp(instance, og_graph, stats_out,
                                silent, guessed_weights=weights)
                 if sol:
                     if not silent:
