@@ -281,6 +281,10 @@ if __name__ == "__main__":
 
             solution, time_weights = find_opt_size(instance, maxtime, max_k,
                                                    stats_out)
+            if solution:
+                stats_out.write("{}".format(len(solution[0])))
+            else:
+                stats_out.write("{}".format(0))
 
             # recover the paths in an optimal solution
             if bool(solution) and recover:
