@@ -79,6 +79,17 @@ Primary function is `solve`:
     sum to flow) and any guessed weights.
 * Create a corresponding `PathConf` object representing the set of paths taken to the
     first node. (There is necessarily only one such set.)
-* For each vertex in the topological ordering, for each `PathConf`, try to
-    extend the set of paths to the next vertex. If it can be done,
-
+* A dictionary maps `PathConf` pathsets to `Constr` constraint systems (or
+    `SolvedConstr`, if solved)
+* For each vertex in the topological ordering, for each `PathConf` and its
+    corresponding `Constr` constraint system, use the `PathConf`
+    `push` method to push the set of paths in the current `PathConf` to the
+    next node. This generates (likely many) additional `PathConf` objects. For
+    each of these, for each edge that is newly covered, add all of the
+    corresponding constraints to the `Constr` object and add the (`PathConf`,
+    `Constr`) pair to the table for this vertex.
+* At the `t` vertex, there will be some set of (`PathConf`, `Constr`) pairs
+    present. For each, if the `Constr` object is actually a `SolvedConstr`, then we know
+    that we have found a solution (in the SCC graph). If it's still a `Constr`
+    object, we will need to try all possible solutions. But this doesn't happen
+    very often.
