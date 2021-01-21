@@ -92,4 +92,19 @@ Primary function is `solve`:
     present. For each, if the `Constr` object is actually a `SolvedConstr`, then we know
     that we have found a solution (in the SCC graph). If it's still a `Constr`
     object, we will need to try all possible solutions. But this doesn't happen
-    very often.
+    very often, and is addressed at the very end of this document.
+
+At the end of the dynamic programming, we have a table full of `PathConf`
+objects and their corresponding weights in `SolvedConstr` object.
+For each one, we need to
+recover all of the full paths through the graph that use these weights.
+And for each path, we
+also need to try to route it over the cycles and check if it satisfies the
+subpath constraints. All of that is done in the `route_cycles_and_satisfy_subpath_constraints` method of a `SolvedConstr` object.
+
+#### `route_cycles_and_satisfy_subpath_constraints` method of `SolvedConstr`
+object (in `flow.py`):
+
+#### `route_cycles_and_satisfy_subpath_constraints` method of `Constr`
+object (in `flow.py`):
+TODO
