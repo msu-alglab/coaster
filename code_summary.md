@@ -56,5 +56,5 @@ Primary function is `solve`:
 * As in the Toboggan paper, the general idea is to generate routings (i.e.,
     sets of `k` paths) through the graph node by node in the topological
     ordering. Once all routings at vertex `v` are known, we can compute
-    routings at vertex `v+1`.
+    routings at vertex `v+1`. But because we often have
 
