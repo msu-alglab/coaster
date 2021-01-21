@@ -28,7 +28,7 @@ Iterate through graph instances:
                 So a lower bound is that remaining flow/# remaining paths.
 * Get a lower bound on `k` (uses max cut size, and a second method)
 * Starting from lower bound, start trying to solve using increasing `k`. This
-    is all wrapped inside a function `find_opt_size` (still insice
+    is all wrapped inside a function `find_opt_size` (still inside
     `cyclic_flows.py`), so that we can restrict this function to only run for
     `maxtime` time before moving on to next instance. Inside `find_opt_size`,
     we call a function called `solve` (defined in `guess_weights.py`):
@@ -42,8 +42,19 @@ Iterate through graph instances:
         * if the range for the maximum weight is [x,x] for some x, we know the
             max weight
         * if any edge has weight 1, we know there is a path of weight 1
-    * Fixes combinations of weights and tries to solve using dynamic
-        programming by calling `solve` from `dp.py` (see below)
+    * Fixes combinations of weights found in graph and tries to solve using dynamic
+        programming by calling `solve` from `dp.py` (see below). Combinations
+        of weights get less restrictive, so the final call (if we made it
+        there) would have no weights fixed. (This is the theoretical algorithm
+        given in the Toboggan paper.)
 
 #### Dynamic programming: `dp.py`
+
+Primary function is `solve`:
+* Takes in an `Instance` object, the original graph, and a length `k` list of guessed
+    weights
+* As in the Toboggan paper, the general idea is to generate routings (i.e.,
+    sets of `k` paths) through the graph node by node in the topological
+    ordering. Once all routings at vertex `v` are known, we can compute
+    routings at vertex `v+1`.
 
