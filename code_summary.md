@@ -106,7 +106,19 @@ subpath constraints. All of that is done in the `route_cycles_and_satisfy_subpat
 Use `recover_paths` function to return all unique pathsets through the (SCC) graph for this set of weights
 * Uses same DP approach but actually stores backpointers
 * For each pathset, for each cycle:
-    *
+    * For each path (called from the `route_cycles` method of the SCC
+        `graph` object (defined in `graphs.py`)) to generate all possible
+        routing for that path
+    * Generate the cartesian product of all routings for all `k` paths
+    * For each element in the product, check whether it satisfies the edge
+        weights in the SCC. If yes, add to a list to return (`valid_routings`)
+    * For each routing in `valid_routing`, splice it in to this pathset
+* After all (path, weight) combos through the contracted graph (covering all cycles) have
+    been generated, recover corresponding (path, weight) combos in original
+    graph
+* For each, check whether subpath constraints are satisfied. If yes, return
+    that solution. If none work, move on to the next `PathConf`, `SolvedConstr`
+    pair.
 
 
 #### `route_cycles_and_satisfy_subpath_constraints` method of `Constr`
