@@ -60,9 +60,9 @@ class Instance:
         print("Weights:", self.weights)
         print("Max-weight bounds:", self.max_weight_bounds)
         print("Weight bounds:", list(map(tuple, self.weight_bounds)))
-        print("")
-        print("Cut-representation:")
-        print(self.cuts)
+        # print("")
+        # print("Cut-representation:")
+        # print(self.cuts)
 
     def _compute_max_weight_bounds(self):
         # Get lower bound for highest weight
