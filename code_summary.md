@@ -45,8 +45,7 @@ Iterate through graph instances:
     * Fixes combinations of weights found in graph and tries to solve using dynamic
         programming by calling `solve` from `dp.py` (see below). Combinations
         of weights get less restrictive, so the final call (if we made it
-        there) would have no weights fixed. (This is the theoretical algorithm
-        given in the Toboggan paper.)
+        there) would have no weights fixed.
 
 #### Dynamic programming: `dp.py`
 
@@ -57,14 +56,29 @@ Primary function is `solve`:
     sets of `k` paths) through the graph node by node in the topological
     ordering. Once all routings at vertex `v` are known, we can compute
     routings at vertex `v+1`. But each routing is actually stored as a `Constr`
-    object, which represents a `k` by `k + 1` matrix (the `k` by `k` matrix `A`
-    and the solution vector `b`).
-* `Constr` objects are defined in `flow.py`. The linear system they define is
-    always kept in RREF: each time a constraint is added, the matrix is
-    converted to RREF.
-* If the linear system represented by a `Constr` object is of full rank, then
-    it has a single solution. If this solution consists of positive integers
-    (i.e., it is a valid flow), then the `Constr` object is replaced by a
-    `SolvedConstr` object, which has the same interface as the `Constr` object
-    but only stores the weights. If not, the `Constr` object is replaced by
-    `None`.
+    object, defined in `flow.py`:
+    * Represent a `k` by `k + 1` matrix (the `k` by `k` matrix `A`
+    and the solution vector `b`), which is always kept in reduced row echelon
+    form (RREF). Each time a constraint is added, the matrix is
+        converted to RREF.
+    * After adding a new constraint and converting to RREF, if the linear system represented
+     by a `Constr` object is of full rank, then
+        it has a single solution. If this solution consists of positive integers
+        (i.e., it is a valid flow), then the `Constr` object is replaced by a
+        `SolvedConstr` object, which has the same interface as the `Constr` object
+        but only stores the weights. If not, the `Constr` object is replaced by
+        `None`.
+* Additionally, the sets of paths themselves are stored in a `PathConf` object,
+    which is also defined in `flow.py`:
+    * `PathConf` objects match the path indices (all `k` of them) to vertices,
+        and indicate which arc each path took to reach the vertex. A `PathConf`
+        object can generate all the possible ways to extend itself into a new
+        `PathConf` object by moving on to the next vertex in the topological
+        ordering.
+* First, create a `Constr` object with constraints from flow (all paths must
+    sum to flow) and any guessed weights.
+* Create a corresponding `PathConf` object representing the set of paths taken to the
+    first node. (There is necessarily only one such set.)
+* For each vertex in the topological ordering, for each `PathConf`, try to
+    extend the set of paths to the next vertex. If it can be done,
+
