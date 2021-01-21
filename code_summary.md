@@ -120,9 +120,7 @@ Use `recover_paths` function to return all unique pathsets through the (SCC) gra
     that solution. If none work, move on to the next `PathConf`, `SolvedConstr`
     pair.
 
-
-#### `route_cycles_and_satisfy_subpath_constraints` method of `Constr`
-object (in `flow.py`):
+#### `route_cycles_and_satisfy_subpath_constraints` method of `Constr` object (in `flow.py`):
 If we need to process a `Constr` object, we generate every possible weight
 combination for the free variables, create a `SolvedConstr` for each, and then
 use it to call `route_cycles_and_satisfy_subpath_constraints` as above.
