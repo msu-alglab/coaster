@@ -30,8 +30,9 @@ def solve(instance, og_graph, stats_out, silent=True, guessed_weights=None):
     # The only constraint a priori is the total flow value
     globalconstr = Constr(instance)
 
-    print("A priori, all paths sum to flow val. So globalconstr=")
-    print(globalconstr)
+    if not silent:
+        print("A priori, all paths sum to flow val. So globalconstr=")
+        print(globalconstr)
     guessed_weights = [None]*k if not guessed_weights else guessed_weights
 
     assert len(guessed_weights) == k
@@ -39,9 +40,10 @@ def solve(instance, og_graph, stats_out, silent=True, guessed_weights=None):
         if guess is None:
             continue
         globalconstr = globalconstr.add_constraint([index], (0, guess))
-        print("Adding constraint for guessed weight {}".format(guess))
-        print("globalconstr=")
-        print(globalconstr)
+        if not silent:
+            print("Adding constraint for guessed weight {}".format(guess))
+            print("globalconstr=")
+            print(globalconstr)
         if globalconstr is None:
             return set()
 
