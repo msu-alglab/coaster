@@ -1,2 +1,0 @@
-filename,graphname,n,m,contracted_n,contracted_m,scc_n,scc_m,num_cycles,size_of_cycles...,routings_over_cycle...,
-sc3.graph,289-1.graph,13,28,12,27,3,6,1,10,5544,5544,4
