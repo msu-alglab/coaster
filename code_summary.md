@@ -102,7 +102,12 @@ And for each path, we
 also need to try to route it over the cycles and check if it satisfies the
 subpath constraints. All of that is done in the `route_cycles_and_satisfy_subpath_constraints` method of a `SolvedConstr` object.
 
-####`route_cycles_and_satisfy_subpath_constraints` method of `SolvedConstr` object (in `flow.py`):
+#### `route_cycles_and_satisfy_subpath_constraints` method of `SolvedConstr` object (in `flow.py`):
+Use `recover_paths` function to return all unique pathsets through the (SCC) graph for this set of weights
+* Uses same DP approach but actually stores backpointers
+* For each pathset, for each cycle:
+    *
 
-####`route_cycles_and_satisfy_subpath_constraints` method of `Constr`
+
+#### `route_cycles_and_satisfy_subpath_constraints` method of `Constr`
 object (in `flow.py`): TODO
