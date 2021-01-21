@@ -56,5 +56,15 @@ Primary function is `solve`:
 * As in the Toboggan paper, the general idea is to generate routings (i.e.,
     sets of `k` paths) through the graph node by node in the topological
     ordering. Once all routings at vertex `v` are known, we can compute
-    routings at vertex `v+1`. But because we often have
-
+    routings at vertex `v+1`. But each routing is actually stored as a `Constr`
+    object, which represents a `k` by `k + 1` matrix (the `k` by `k` matrix `A`
+    and the solution vector `b`).
+* `Constr` objects are defined in `flow.py`. The linear system they define is
+    always kept in RREF: each time a constraint is added, the matrix is
+    converted to RREF.
+* If the linear system represented by a `Constr` object is of full rank, then
+    it has a single solution. If this solution consists of positive integers
+    (i.e., it is a valid flow), then the `Constr` object is replaced by a
+    `SolvedConstr` object, which has the same interface as the `Constr` object
+    but only stores the weights. If not, the `Constr` object is replaced by
+    `None`.
