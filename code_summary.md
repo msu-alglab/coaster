@@ -1,8 +1,8 @@
-Main file: `cyclic_flows.py`:
+#### Main file: `cyclic_flows.py`
 
 Parse arguments
 
-Iterate through graph instances
+Iterate through graph instances:
 * Contract graph instance
 * Create SCC graph from contracted graph
 * Create an `Instance` object (defined in `flow.py`):
@@ -23,13 +23,17 @@ Iterate through graph instances
     `cyclic_flows.py`), so that we can restrict this function to only run for
     `maxtime` time before moving on to next instance. Inside `find_opt_size`,
     we call a function called `solve` (defined in `guess_weights.py`):
-    * takes in the `Instance` object (stores the current `k`) and the original
+    * Inputs: the `Instance` object (stores the current `k`) and the original
         graph (used to check that subpath constraints are satisfied, if we do
         find a solution)
-    * tries guessing weights, so first sees if we can fix any weights for all
+    * Check if we can fix any weights for all
         solutions:
         * if `k`=size of largest cut, then the weights have to be the weights
             of the edges in that cut
         * if the range for the maximum weight is [x,x] for some x, we know the
-            max weight.
+            max weight
+        * if any edge has weight 1, we know there is a path of weight 1
+    * Fixes combinations of weights and tries to solve using dynamic
+        programming by calling `solve` from `dp.py` (see below)
 
+#### Dynamic programming: `dp.py`
