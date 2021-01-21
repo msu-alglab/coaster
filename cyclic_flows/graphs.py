@@ -307,7 +307,10 @@ class AdjList:
         for key, val in routings.items():
             print("##  In/out node: {}; num. routings: {}".format(key,
                                                                   len(val)))
-            num_products *= len(val)
+            # if this in/out node combo is used by more than one path, multiply
+            # for each one
+            for i in range(len(pair_indices[key])):
+                num_products *= len(val)
         print("## there should be {} routings to check".format(num_products))
         stats_out.write("{},".format(num_products))
         scc_arcs = self.get_scc_arcs(scc)
@@ -339,6 +342,7 @@ class AdjList:
                 these_pair_indices = [item for sublist in pair_indices.values()
                                       for item in sublist]
                 valid_routings.append((routing, these_pair_indices, in_edges))
+        assert counter == num_products
         if valid_routings:
             print("## Checked {} total routing combos.".format(counter))
             print("## Found {} valid routings through cycle {}".format(
