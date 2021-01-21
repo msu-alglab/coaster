@@ -11,12 +11,21 @@ Iterate through graph instances:
             SCC graph and list of nodes in each SCC
     * Also holds upper and lower bounds for the `k` weights (in ascending
         order).
-        * To find minimum: each top cut has a size. Call it `s`. We are trying
-            to cover it with `k` paths. So, for each edge  with weight `w` in the cut, we can
-            send at most `s - k + 1` paths over it, so we need a path of at
-            least `w / (s - k + 1)`.
-        * To find the maximum: note that the max weight for any path is minimum
-            of max weights in any top cut.
+        * For the maximum weight:
+            * To find minimum: each top cut has a size. Call it `s`. We are trying
+                to cover it with `k` paths. So, for each edge  with weight `w` in the cut, we can
+                send at most `s - k + 1` paths over it, so we need a path of at
+                least `w / (s - k + 1)`.
+            * To find the maximum: note that the max weight for any path is minimum
+                of max weights in any top cut.
+        * For all other weights:
+            * To find upper bounds: look at edge weights in increasing order.
+                Smallest is an upper bound. Then, for rest, if greater than sum
+                of all upper bounds so far, must be an upper bound.
+            * To find lower bounds: consider the weights in descending order.
+                If the previous weights are equal to the upper bound, the
+                following weights must account for all of the rest of the flow.
+                So a lower bound is that remaining flow/# remaining paths.
 * Get a lower bound on `k` (uses max cut size, and a second method)
 * Starting from lower bound, start trying to solve using increasing `k`. This
     is all wrapped inside a function `find_opt_size` (still insice
@@ -37,3 +46,4 @@ Iterate through graph instances:
         programming by calling `solve` from `dp.py` (see below)
 
 #### Dynamic programming: `dp.py`
+
