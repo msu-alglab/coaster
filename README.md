@@ -1,1 +1,3 @@
-test
+Required packages:
+* numpy
+* scipy
