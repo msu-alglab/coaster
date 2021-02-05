@@ -70,6 +70,8 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
     if instance.has_bad_bounds():
         return set()
 
+    if not silent:
+        instance.info()
     # if k equals the size of the largest edge cut, the weights are
     # predetermined
     if instance.k == max(len(C) for C in instance.edge_cuts):
@@ -86,8 +88,6 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
             print(solutions)
         return solutions
 
-    if not silent:
-        instance.info()
 
     max_weight = instance.max_weight_bounds[1]
     feasible_weights = list(filter(lambda w: w <= max_weight,
