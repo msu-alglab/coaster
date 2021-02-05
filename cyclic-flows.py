@@ -12,6 +12,7 @@ import signal
 # import cProfile
 # local imports
 from os import path
+from os import mkdir
 import sys
 from cyclic_flows.guess_weight import solve
 from cyclic_flows.parser import read_instances
@@ -153,6 +154,8 @@ if __name__ == "__main__":
     filename = path.basename(graph_file)
     truth_file = "{}.truth".format(path.splitext(graph_file)[0])
     stats_file = "stats_files/" + graph_file.split("/")[-1] + "_stats.txt"
+    if not path.isdir("stats_files"):
+        mkdir("stats_files")
     stats_out = open(stats_file, "w")
     stats_out.write("filename,graphname,n,m,contracted_n,contracted_m," +
                     "scc_n,scc_m,num_cycles,size_of_cycles...,routings_" +
