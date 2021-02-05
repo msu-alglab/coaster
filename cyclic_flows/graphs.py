@@ -67,16 +67,28 @@ class AdjList:
         return iter(self.vertices)
 
     def source(self):
+        sources = []
         for v in self:
             if self.in_degree(v) == 0:
-                return v
-        raise TypeError("This graph has no source")
+                sources.append(v)
+        if len(sources) == 1:
+            return sources[0]
+        elif len(sources) == 0:
+            raise TypeError("This graph has no source")
+        else:
+            raise TypeError("This graph has multiple sources")
 
     def sink(self):
+        sinks = []
         for v in self:
             if self.out_degree(v) == 0:
-                return v
-        raise TypeError("This graph has no sink")
+                sinks.append(v)
+        if len(sinks) == 1:
+            return sinks[0]
+        elif len(sinks) == 0:
+            raise TypeError("This graph has no sink")
+        else:
+            raise TypeError("This graph has multiple sinks")
 
     def labeled_neighborhood(self, u):
         if u in self.adj_list:
@@ -540,6 +552,28 @@ class AdjList:
                 raise ValueError("There is no edge ({},{})".format(u, v))
             path_arcs.append(arc)
         return path_arcs
+
+    def check_flow(self):
+        """Return whether or not the graph satisfies conservation of flow at
+        all non-source, non-sink nodes."""
+
+        for node in self.vertices:
+            if node != self.source() and node != self.sink():
+                out_weight = 0
+                for arc in self.out_arcs_lists[node]:
+                    out_weight += self.arc_info[arc]['weight']
+                in_weight = 0
+                for arc in self.in_arcs_lists[node]:
+                    in_weight += self.arc_info[arc]['weight']
+                if out_weight != in_weight:
+                    print("At node {}".format(node))
+                    print("out:")
+                    for arc in self.out_arcs_lists[node]:
+                        print(self.arc_info[arc]["destin"])
+                    print("in:")
+                    for arc in self.in_arcs_lists[node]:
+                        print(self.arc_info[arc]["start"])
+                    raise TypeError("This graph is not a flow")
 
 
 def test_paths(graph, pathset):

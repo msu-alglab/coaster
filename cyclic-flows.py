@@ -208,6 +208,7 @@ if __name__ == "__main__":
     # Iterate over every graph-instance inside the input file
     for graphdata, k, index in read_instances(graph_file, truth_file):
         graph, graphname, graphnumber = graphdata
+        graph.check_flow()
 
         if args.create_graph_pics:
             graph.show("graph_pics/graph{}.pdf".format(graphnumber))
