@@ -13,7 +13,7 @@
 FPT mode is the default mode for Coaster. It can be run using
 
 ```
-python cyclic-flows.py [input-file]
+python coaster.py [input-file]
 ```
 
 #### Heuristic mode
@@ -23,7 +23,7 @@ Coaster can be run in heuristic mode to find solutions in larger graphs.
 *TODO: does heuristic mode work on cyclic graphs?*
 
 ```
-python cyclic-flows.py [input-file] --heuristic
+python coaster.py [input-file] --heuristic
 ```
 
 ### Submodules

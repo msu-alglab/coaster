@@ -14,10 +14,10 @@ import signal
 from os import path
 from os import mkdir
 import sys
-from cyclic_flows.guess_weight import solve
-from cyclic_flows.parser import read_instances
-from cyclic_flows.flow import Instance
-from cyclic_flows.graphs import test_flow_cover
+from coaster.guess_weight import solve
+from coaster.parser import read_instances
+from coaster.flow import Instance
+from coaster.graphs import test_flow_cover
 
 
 # Override error message to show help message instead
