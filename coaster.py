@@ -82,10 +82,10 @@ def index_range(raw):
     return indices
 
 
-def find_opt_size(instance, maxtime, max_k, stats_out):
+def find_exact_sol(instance, maxtime, max_k, stats_out):
     """
-    Find the optimum size of a flow decomposition. stats_out is a file for
-    writing stats about this instance.
+    Find an optimal flow decomposition (paths and weights) for instance.
+    stats_out is a file for writing stats about this instance.
 
     This is the main function for running the FPT version of Coaster.
     """
@@ -114,6 +114,30 @@ def find_opt_size(instance, maxtime, max_k, stats_out):
     except AssertionError:
         print("Reached max k after {} seconds".format(elapsed))
         return set(), elapsed
+
+
+def find_heuristic_sol(instance, maxtime,):
+    """
+    Find a flow decomposition for instance. NOTE: unsure whether this works for
+    cyclic instances. TODO: add statsfile.
+
+    This is the main function for running the heuristic version of Coaster.
+    """
+
+    if maxtime is None:
+        maxtime = -1
+    print("Searching for heuristic solution. Timeout set at {}"
+          "".format(maxtime))
+    try:
+        with timeout(seconds=maxtime):
+            # TODO: use ifd to solve
+            # make ifd instance, solve, etc
+            elapsed = time.time() - start
+            print("\n# Solution time was {:.2f} seconds".format(elapsed))
+            return solution, elapsed
+    except TimeoutError:
+        print("Timed out after {} seconds".format(maxtime))
+        return set(), maxtime
 
 
 if __name__ == "__main__":
@@ -146,6 +170,7 @@ if __name__ == "__main__":
                         action='store_true')
     parser.add_argument("--max_k", help="Largest k to consider for any graph",
                         type=int)
+    parser.add_argument('--heuristic', default=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -267,21 +292,24 @@ if __name__ == "__main__":
             else:
                 weights = [0]
         else:
-            # create an instance of the graph
-            k = 1
-            instance = Instance(scc_reduced, k, reduced, sccs)
-            k_improve = instance.best_cut_lower_bound
-            print("# Reduced instance has n = {}, m = {}, and lower_bound "
-                  "= {}:".format(n, m, instance.k), flush=True)
-
-            k_cutset = instance.max_edge_cut_size  # this is just for reporting
-
-            solution, time_weights = find_opt_size(instance, maxtime, max_k,
-                                                   stats_out)
-            if solution:
-                stats_out.write("{}".format(len(solution[0])))
+            if args.heuristic:
+                # run heuristic
+                pass
             else:
-                stats_out.write("{}".format(0))
+                k = 1
+                instance = Instance(scc_reduced, k, reduced, sccs)
+                k_improve = instance.best_cut_lower_bound
+                print("# Reduced instance has n = {}, m = {}, and lower_bound "
+                      "= {}:".format(n, m, instance.k), flush=True)
+
+                k_cutset = instance.max_edge_cut_size  # this is for reporting
+
+                solution, time_weights = find_exact_sol(instance, maxtime,
+                                                        max_k, stats_out)
+                if solution:
+                    stats_out.write("{}".format(len(solution[0])))
+                else:
+                    stats_out.write("{}".format(0))
 
             # recover the paths in an optimal solution
             if bool(solution):
@@ -297,7 +325,6 @@ if __name__ == "__main__":
                 test_flow_cover(graph, paths, weights)
                 print("# Paths, weights pass test: flow decomposition"
                       " confirmed.")
-                # Print solutions
 
         # print experimental statistics
         if args.experiment_info:
