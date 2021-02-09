@@ -1,0 +1,38 @@
+# graph number = 0 name = three_paths_10_20_20
+20 0 1 3 4
+10 0 2 1 4
+20 0 2 1 3 4
+# graph number = 1 name = trivial_117
+117 0 1 2 3
+# graph number = 2 name = three_paths_100_200_300
+200 0 1 4
+100 0 1 3 4
+300 0 2 1 3 4
+# graph number = 3 name = four_paths_25_25_50_50
+25 0 1 4
+50 0 2 4
+50 0 3 4
+25 0 3 2 1 4
+# graph number = 4 name = two_paths_1_8
+1 0 1 3
+8 0 2 3
+# graph number = 5 name = six_paths_10_20_30_40_100_100
+20 0 1 4 5
+40 0 1 3 5
+100 0 1 3 5
+10 0 2 3 5
+30 0 2 4 5
+100 0 2 4 5
+# graph number = 6 name = six_paths_1_2_3_4_5_6
+1 0 1 2
+2 0 1 2
+3 0 1 2
+4 0 1 2
+5 0 1 2
+6 0 1 2
+# graph number = 7 name = contraction_problem
+1 0 1 2 3 4 7 8 9
+2 0 1 2 5 6 7 8 9
+# graph number = 8 name = contraction_problem_2
+10 0 1 2 3 4 5 6 7
+20 0 1 2 3 4 6 7 
