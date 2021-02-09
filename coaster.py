@@ -83,10 +83,13 @@ def index_range(raw):
 
 
 def find_opt_size(instance, maxtime, max_k, stats_out):
-    """Find the optimum size of a flow decomposition. stats_out is a file for
+    """
+    Find the optimum size of a flow decomposition. stats_out is a file for
     writing stats about this instance.
 
-    This is the main function for running the FPT version of Coaster."""
+    This is the main function for running the FPT version of Coaster.
+    """
+
     if maxtime is None:
         maxtime = -1
     print("Searching for minimum-sized set of weights, timeout set at {}"
@@ -271,7 +274,7 @@ if __name__ == "__main__":
             print("# Reduced instance has n = {}, m = {}, and lower_bound "
                   "= {}:".format(n, m, instance.k), flush=True)
 
-            k_cutset = instance.max_edge_cut_size
+            k_cutset = instance.max_edge_cut_size  # this is just for reporting
 
             solution, time_weights = find_opt_size(instance, maxtime, max_k,
                                                    stats_out)
