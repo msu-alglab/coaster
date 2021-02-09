@@ -84,7 +84,9 @@ def index_range(raw):
 
 def find_opt_size(instance, maxtime, max_k, stats_out):
     """Find the optimum size of a flow decomposition. stats_out is a file for
-    writing stats about this instance."""
+    writing stats about this instance.
+
+    This is the main function for running the FPT version of Coaster."""
     if maxtime is None:
         maxtime = -1
     print("Searching for minimum-sized set of weights, timeout set at {}"
@@ -130,9 +132,6 @@ if __name__ == "__main__":
     parser.add_argument('--timeout',
                         help='Timeout in seconds, after which execution'
                         ' for a single graph will be stopped.', type=int)
-    parser.add_argument('--skip_truth', help="Do not check for *.truth."
-                        " Instead, start from our computed lower-bound on k.",
-                        action='store_true')
     parser.add_argument('--print_arcs', help="Make output include arc labels.",
                         action='store_true')
     parser.add_argument('--print_contracted', help="Print contracted graph.",
@@ -275,8 +274,7 @@ if __name__ == "__main__":
                 weights = [0]
         else:
             # create an instance of the graph
-            if args.skip_truth:
-                k = 1
+            k = 1
             instance = Instance(scc_reduced, k, reduced, sccs)
             k_improve = instance.best_cut_lower_bound
             print("# Reduced instance has n = {}, m = {}, and lower_bound "
