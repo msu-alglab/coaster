@@ -1,6 +1,8 @@
 Required packages:
 * numpy
 * scipy
+* ortools (needed for finding mincost flow in the inexact flow decomposition
+    heuristic)
 
 ### Submodules
 
