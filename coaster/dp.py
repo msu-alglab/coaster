@@ -9,7 +9,7 @@ from collections import defaultdict, deque
 import time
 
 # local imports
-from cyclic_flows.flow import Constr, SolvedConstr, PathConf
+from coaster.flow import Constr, SolvedConstr, PathConf
 
 
 def solve(instance, og_graph, stats_out, silent=True, guessed_weights=None):

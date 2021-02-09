@@ -3,11 +3,12 @@
 # and is Copyright (C) North Carolina State University, 2017. It is licensed
 # under the three-clause BSD license; see LICENSE.
 #
-# local imports
-from cyclic_flows.graphs import AdjList
 # python libs
 import re
 import os
+
+# local imports
+from coaster.graphs import AdjList
 
 header_regex = re.compile('# graph number = ([0-9]*) name = (.*)')
 edge_regex = re.compile('(\d*) (\d*) (\d*\.\d*)') # noqa
@@ -116,10 +117,10 @@ def enumerate_decompositions(decomposition_file):
                 f.seek(last_pos)
                 break
 
-            l = line.split()
-            l = list(map(lambda x: int(x), l))
+            l_list = line.split()
+            l_list = list(map(lambda x: int(x), l_list))
 
-            path_decomposition.append((l[0], l[1:]))
+            path_decomposition.append((l_list[0], l_list[1:]))
 
         return (graph_name, graph_number, path_decomposition)
 

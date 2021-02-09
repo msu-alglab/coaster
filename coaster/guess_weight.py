@@ -8,8 +8,9 @@
 # python libs
 import sys
 import itertools
+
 # local imports
-from cyclic_flows.dp import solve as solve_dp
+from coaster.dp import solve as solve_dp
 
 
 # Print iterations progress
@@ -87,7 +88,6 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
             print("Solutions are:")
             print(solutions)
         return solutions
-
 
     max_weight = instance.max_weight_bounds[1]
     feasible_weights = list(filter(lambda w: w <= max_weight,

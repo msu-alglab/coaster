@@ -1,8 +1,30 @@
-Required packages:
+### Requirements
+
+* Python 3
 * numpy
 * scipy
 * ortools (needed for finding mincost flow in the inexact flow decomposition
     heuristic)
+
+### Running Coaster
+
+#### FPT mode
+
+FPT mode is the default mode for Coaster. It can be run using
+
+```
+python cyclic-flows.py [input-file]
+```
+
+#### Heuristic mode
+
+Coaster can be run in heuristic mode to find solutions in larger graphs.
+
+*TODO: does heuristic mode work on cyclic graphs?*
+
+```
+python cyclic-flows.py [input-file] --heuristic
+```
 
 ### Submodules
 
