@@ -139,9 +139,6 @@ if __name__ == "__main__":
     parser.add_argument('--experiment_info', help='Print out experiment-'
                         'relevant info in format convenient for processing.',
                         action='store_true')
-    parser.add_argument("--no_recovery", help="Only print the number of paths"
-                        " and their weights in an optimal decomposition, but"
-                        " do not recover the paths.", action='store_true')
     parser.add_argument("--create_graph_pics", help="Generate PDF of graphs",
                         action='store_true')
     parser.add_argument("--max_k", help="Largest k to consider for any graph",
@@ -171,12 +168,6 @@ if __name__ == "__main__":
         print("# Max k is set to", max_k)
     else:
         print("# No max_k set")
-
-    recover = not args.no_recovery
-    if recover:
-        print("# Recovering paths")
-    else:
-        print("# Only printing path weights")
 
     instances = args.indices
     if instances:
@@ -290,7 +281,7 @@ if __name__ == "__main__":
                 stats_out.write("{}".format(0))
 
             # recover the paths in an optimal solution
-            if bool(solution) and recover:
+            if bool(solution):
                 paths, weights = solution
                 start_path_time = time.time()
                 print("# Solutions:")
