@@ -116,7 +116,7 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
         return set(), elapsed
 
 
-def find_heuristic_sol(instance, maxtime,):
+def find_heuristic_sol(reduced, graph, maxtime,):
     """
     Find a flow decomposition for instance. NOTE: unsure whether this works for
     cyclic instances. TODO: add statsfile.
@@ -292,24 +292,23 @@ if __name__ == "__main__":
             else:
                 weights = [0]
         else:
+            k_start = 1
+            instance = Instance(scc_reduced, k_start, reduced, sccs)
+            k_improve = instance.best_cut_lower_bound
+            print("# Reduced instance has n = {}, m = {}, and lower_bound "
+                  "= {}:".format(n, m, instance.k), flush=True)
+
+            k_cutset = instance.max_edge_cut_size  # this is for reporting
             if args.heuristic:
-                # run heuristic
-                pass
+                solution, time_weights = find_heuristic_sol(graph, reduced,
+                                                            maxtime)
             else:
-                k = 1
-                instance = Instance(scc_reduced, k, reduced, sccs)
-                k_improve = instance.best_cut_lower_bound
-                print("# Reduced instance has n = {}, m = {}, and lower_bound "
-                      "= {}:".format(n, m, instance.k), flush=True)
-
-                k_cutset = instance.max_edge_cut_size  # this is for reporting
-
                 solution, time_weights = find_exact_sol(instance, maxtime,
                                                         max_k, stats_out)
-                if solution:
-                    stats_out.write("{}".format(len(solution[0])))
-                else:
-                    stats_out.write("{}".format(0))
+            if solution:
+                stats_out.write("{}".format(len(solution[0])))
+            else:
+                stats_out.write("{}".format(0))
 
             # recover the paths in an optimal solution
             if bool(solution):
