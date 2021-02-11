@@ -6,7 +6,6 @@ import copy
 import math
 import queue
 import time
-import os
 import numpy as np
 from collections import defaultdict
 from itertools import permutations
@@ -52,14 +51,14 @@ class IfdAdjList:
         edge with an interval of zero."""
         zeros = []
         for path in self.paths:
-            #print("Checking path {}".format(path))
+            # print("Checking path {}".format(path))
             has_zero = 0
             for arc in path:
-                lb = self.arc_info[arc]["lower_bound"]
-                ub = self.arc_info[arc]["upper_bound"]
-                #print("{} {} interval".format(lb,ub))
-                if (self.arc_info[arc]["upper_bound"] -\
-                    self.arc_info[arc]["lower_bound"]) == 0:
+                # lb = self.arc_info[arc]["lower_bound"]
+                # ub = self.arc_info[arc]["upper_bound"]
+                # print("{} {} interval".format(lb,ub))
+                if (self.arc_info[arc]["upper_bound"] -
+                        self.arc_info[arc]["lower_bound"]) == 0:
                     has_zero = 1
             zeros.append(has_zero)
         print(zeros)
@@ -88,10 +87,9 @@ class IfdAdjList:
             flow_out = 0
             for out_arc in self.out_arcs_lists[vert]:
                 flow_out += self.arc_info[out_arc]["weight"]
-            #print("For vert {}, flow in is {} and flow out is {}".format(vert,
-            #                    flow_in, flow_out))
+            # print("For vert {}, flow in is {} and flow out is {}".format(
+            #     vert, flow_in, flow_out))
             assert (flow_in == flow_out), "Conservation of flow violated"
-
 
     def add_new_source_sink(self):
         """Remove current source and sink and add new ones with edges to all
@@ -111,29 +109,28 @@ class IfdAdjList:
                 if self.get_arc(vert, sink) is None:
                     self.add_inexact_edge(vert, sink, 0, float('inf'))
 
-
     def check_flow(self):
         """Check that the set of paths  satisfies bounds."""
         # make a total_flow key in the arc_info dictionary and initialize to 0
         for arc in self.arc_info.keys():
             self.arc_info[arc]["total_flow"] = 0
-        #print("#  Final paths and weights are:")
+        # print("#  Final paths and weights are:")
         index = 0
         for (path, weight) in zip(self.paths, self.weights):
-            #print("#    Path {}: {}. Weight: {}.".format(index, path, weight))
+            # print("#\tPath {}: {}. Weight: {}.".format(index, path, weight))
             index = index + 1
             for arc in path:
                 # Count this path's flow toward the arc's total
-                self.arc_info[arc]["total_flow"] = self.arc_info[arc]["total_flow"] + \
-                                                        weight
+                self.arc_info[arc]["total_flow"] =\
+                    self.arc_info[arc]["total_flow"] + weight
         for arc in self.arc_info.keys():
             f = self.arc_info[arc]["total_flow"]
             lb = self.arc_info[arc]["lower_bound"]
             ub = self.arc_info[arc]["upper_bound"]
-            #print("#    For arc {}: flow={}, bounds = [{},{}]".format(arc, f, lb, ub))
+            # print("#\tFor arc {}: flow={}, bounds = [{},{}]".format(
+            #     arc, f, lb, ub))
             assert (f >= lb), "Flow value less than lower bound"
             assert (f <= ub), "Flow value greater than upper bound"
-
 
     def check_paths(self):
         """Check that paths are valid."""
@@ -152,11 +149,9 @@ class IfdAdjList:
             arc_end = self.arc_info[arc]["destin"]
             assert(arc_end == self.sink()), "Path does not end at t"
 
-
     def get_paths(self):
         """Get the set of paths"""
         return self.paths
-
 
     def get_weights(self):
         """Get the set of weights"""
@@ -183,7 +178,6 @@ class IfdAdjList:
         for x in range(num):
             add_s_t_path(weight)
 
-
     def write_exact_graph_to_file(self, output_file):
         """Write exact graph to file."""
         print("Writing output file.")
@@ -196,7 +190,6 @@ class IfdAdjList:
                     t = self.arc_info[arc]['destin']
                     w = self.arc_info[arc]['weight']
                     f.write("{} {} {}\n".format(s, t, w))
-
 
     def get_num_zero_lower_bounds(self):
         count = 0
@@ -214,10 +207,8 @@ class IfdAdjList:
     def get_rebalances(self):
         return(self.rebalances)
 
-
     def get_pairwise_rebalances(self):
         return self.pairwise_rebalances
-
 
     def get_pairwise_splices(self):
         return self.pairwise_splices
@@ -227,7 +218,6 @@ class IfdAdjList:
 
     def get_k(self):
         return(len(self.paths))
-
 
     def get_edge_info(self):
         edge_info = []
@@ -240,7 +230,6 @@ class IfdAdjList:
             edge_info.append(info)
         return(edge_info)
 
-
     def get_edge_weight(self, start, destin):
         arc = self.get_arc(start, destin)
         return self.arc_info[arc]["weight"]
@@ -251,13 +240,13 @@ class IfdAdjList:
                 self.arc_info[arc]["upper_bound"])
 
     def create_queue(self):
-        # for each arc with lb =0 and f>0, prioritize it by its current flow value
+        # for each arc with lb =0 and f>0, prioritize by current flow value
         q = queue.PriorityQueue()
         for arc in self.arc_info.keys():
             lb = self.arc_info[arc]["lower_bound"]
             f = self.arc_info[arc]["weight"]
             if (lb == 0) & (f > 0):
-                #print("Adding {},{} to the queue".format(f, arc))
+                # print("Adding {},{} to the queue".format(f, arc))
                 q.put(([f, arc]))
         return(q)
 
@@ -266,45 +255,43 @@ class IfdAdjList:
 
         # store original upper bounds
         for arc in self.arc_info.keys():
-            self.arc_info[arc]["original_ub"] = \
-            self.arc_info[arc]["upper_bound"]
+            self.arc_info[arc]["original_ub"] =\
+                self.arc_info[arc]["upper_bound"]
 
         q = self.create_queue()
         updates = 0
 
         while (not q.empty()):
             # for every edge that has flow 0, set upper bound to 0
-            # this ensures that we don't add an edge in order to remove this one
+            # this ensures that we don't add an edge to remove this one
             for arc in self.arc_info.keys():
                 if self.arc_info[arc]["weight"] == 0:
                     self.arc_info[arc]["upper_bound"] = 0
 
             arc_id = q.get()[1]
-            #print("Trying to adjust flow using arc {}".format(arc_id))
+            # print("Trying to adjust flow using arc {}".format(arc_id))
             # set upper bound of this edge to 0
             self.arc_info[arc_id]["upper_bound"] = 0
             flow_found = self.update_flow()
             if flow_found:
-                start = self.arc_info[arc_id]["start"]
-                destin = self.arc_info[arc_id]["destin"]
-                #print("Found flow without arc {}, ({},{}).".format(arc_id,
-                ##    start, destin))
+                # start = self.arc_info[arc_id]["start"]
+                # destin = self.arc_info[arc_id]["destin"]
+                # print("Found flow without arc {}, ({},{}).".format(arc_id,
+                #    start, destin))
                 # create new queue from new flow
                 q = self.create_queue()
                 updates += 1
 
         # return bounds to original
         for arc in self.arc_info.keys():
-            self.arc_info[arc]["upper_bound"] = \
-            self.arc_info[arc]["original_ub"]
+            self.arc_info[arc]["upper_bound"] =\
+                self.arc_info[arc]["original_ub"]
         return(updates)
 
-
     def unexplained_flow(self):
-        flows = [self.arc_info[arc]["unexplained_flow"] for arc in self.arc_info]
-
+        flows = [self.arc_info[arc]["unexplained_flow"]
+                 for arc in self.arc_info]
         return(sum(flows) > 0)
-
 
     def run_greedy_width(self):
         """
@@ -312,14 +299,14 @@ class IfdAdjList:
         """
         print("\nRunning greedy width to find an initial path solution.")
         for arc in self.arc_info:
-            self.arc_info[arc]["unexplained_flow"] = self.arc_info[arc]["weight"]
+            self.arc_info[arc]["unexplained_flow"] =\
+                self.arc_info[arc]["weight"]
         tries = 0
         while self.unexplained_flow():
             tries += 1
             # don't keep going forever
-            assert tries<1000
+            assert tries < 1000
             self.run_dijkstra()
-
 
     # from https://startupnextdoor.com/dijkstras-algorithm-in-python-3/
     def run_dijkstra(self):
@@ -344,7 +331,7 @@ class IfdAdjList:
             v = v_tuple[1]
             for e in self.out_arcs_lists[v]:
                 weight = self.arc_info[e]["unexplained_flow"]
-                e_dest  = self.arc_info[e]["destin"]
+                e_dest = self.arc_info[e]["destin"]
                 current_min_width = widths[e_dest]
                 width_to_v = widths[v]
                 candidate_min_width = min(width_to_v, weight)
@@ -368,13 +355,8 @@ class IfdAdjList:
         print(shortest_path)
         self.weights.append(flow)
 
-    def set_paths(self, paths):
-        self.paths = paths
-
-
     def set_weights(self, weights):
         self.weights = weights
-
 
     def add_edge(self, u, v, flow):
         self.vertices.add(u)
@@ -392,13 +374,12 @@ class IfdAdjList:
         self.in_arcs_lists[v].append(this_label)
         self.max_arc_label += 1
 
-
     def add_inexact_edge(self, u, v, lb, ub):
         self.vertices.add(u)
         self.vertices.add(v)
         # give 0 flow
         flow = 0
-        self.adj_list[u].append((v,flow))
+        self.adj_list[u].append((v, flow))
         self.inverse_adj_list[v].append((u, flow))
 
         this_label = self.max_arc_label
@@ -412,7 +393,6 @@ class IfdAdjList:
         self.out_arcs_lists[u].append(this_label)
         self.in_arcs_lists[v].append(this_label)
         self.max_arc_label += 1
-
 
     def out_arcs(self, node):
         return self.out_arcs_lists[node]
@@ -598,7 +578,6 @@ class IfdAdjList:
         self.vertices.remove(b)
         del self.arc_info[e]
 
-
     def show(self):
         import networkx as nx
         import matplotlib.pyplot as plt
@@ -630,8 +609,7 @@ class IfdAdjList:
                 t = self.arc_info[arc]['destin']
                 w = self.arc_info[arc]['unexplained_flow']
                 print("({} {}) unexplained flow={}, edgeId={}".format(s, t, w,
-                                                                    arc))
-
+                                                                      arc))
 
     def print_out(self):
         """Print the graph to screen."""
@@ -640,11 +618,10 @@ class IfdAdjList:
                 s = self.arc_info[arc]['start']
                 t = self.arc_info[arc]['destin']
                 w = self.arc_info[arc]['weight']
-                l = self.arc_info[arc]['lower_bound']
+                lb = self.arc_info[arc]['lower_bound']
                 u = self.arc_info[arc]['upper_bound']
-                print("{} {} {} {} flow={}, edgeId={}".format(s, t, l, u, w,
-                                                                    arc))
-
+                print("{} {} {} {} flow={}, edgeId={}".format(s, t, lb, u, w,
+                                                              arc))
 
     def find_B(self):
         """Find maximum upper bound from lower bounds."""
@@ -656,18 +633,15 @@ class IfdAdjList:
         m = len(list(self.edges()))
         return((m - n + 2)*max_lb)
 
-
     def update_upper_bounds(self, B):
         """Set any infinite upper bound to B"""
         for arc in self.arcs():
             if self.arc_info[arc[0]]['upper_bound'] == -1:
                 self.arc_info[arc[0]]['upper_bound'] = B
 
-
     def print_paths(self):
         print("#  Paths are: {}".format(self.paths))
         print("#  Weights are: {}\n".format(self.weights))
-
 
     def get_interval_from_minflow(self, wide=False):
         """Use the minflow approach from Traph to find intervals."""
@@ -686,17 +660,17 @@ class IfdAdjList:
             # forward edge
             start_nodes.append(self.arc_info[arc]["start"])
             end_nodes.append(self.arc_info[arc]["destin"])
-            capacities.append(100000) # capacity of 100,000 instead of inf
+            capacities.append(100000)  # capacity of 100,000 instead of inf
             unit_costs.append(1)
-            #print("Adding arc ({}, {}) with unit cost and cap inf".format(
+            # print("Adding arc ({}, {}) with unit cost and cap inf".format(
             #    self.arc_info[arc]["start"],
             #    self.arc_info[arc]["destin"]))
             # backward edge
             start_nodes.append(self.arc_info[arc]["destin"])
             end_nodes.append(self.arc_info[arc]["start"])
-            capacities.append(int(self.arc_info[arc]["weight"])) # don't go negative
+            capacities.append(int(self.arc_info[arc]["weight"]))  # no negative
             unit_costs.append(1)
-            #print("Adding arc ({}, {}) with unit cost and cap inf".format(
+            # print("Adding arc ({}, {}) with unit cost and cap inf".format(
             #    self.arc_info[arc]["destin"],
             #    self.arc_info[arc]["start"]))
         # add (x,s) and (t,x) edges with same cap, cost as above
@@ -709,33 +683,33 @@ class IfdAdjList:
         # (x,s)
         start_nodes.append(x)
         end_nodes.append(self.source())
-        capacities.append(100000) # capacity of 100,000 instead of inf
+        capacities.append(100000)  # capacity of 100,000 instead of inf
         unit_costs.append(1)
-        #print("Adding arc ({}, {}) with unit cost and cap inf".format(
+        # print("Adding arc ({}, {}) with unit cost and cap inf".format(
         #    x,
         #    self.source()))
         # backward
         start_nodes.append(self.source())
         end_nodes.append(x)
-        capacities.append(int(out_weight_x)) # don't go negative
+        capacities.append(int(out_weight_x))  # don't go negative
         unit_costs.append(1)
-        #print("Adding arc ({}, {}) with unit cost and cap inf".format(
+        # print("Adding arc ({}, {}) with unit cost and cap inf".format(
         #    self.source(),
         #    x))
         # (t,x)
         start_nodes.append(self.sink())
         end_nodes.append(x)
-        capacities.append(100000) # capacity of 100,000 instead of inf
+        capacities.append(100000)  # capacity of 100,000 instead of inf
         unit_costs.append(1)
-        #print("Adding arc ({}, {}) with unit cost and cap inf".format(
+        # print("Adding arc ({}, {}) with unit cost and cap inf".format(
         #    self.sink(),
         #    x))
         # backward
         start_nodes.append(x)
         end_nodes.append(self.sink())
-        capacities.append(int(in_weight_x)) # don't go negative
+        capacities.append(int(in_weight_x))  # don't go negative
         unit_costs.append(1)
-        #print("Adding arc ({}, {}) with unit cost and cap inf".format(
+        # print("Adding arc ({}, {}) with unit cost and cap inf".format(
         #    x,
         #    self.sink()))
         # for all verts, if a-exc < 0, add edge (s', v) with capacity -a-exc(v)
@@ -759,20 +733,16 @@ class IfdAdjList:
                     end_nodes.append(v)
                     capacities.append(int(-a_exc))
                     unit_costs.append(0)
-                    #print("Adding arc ({}, {}) with cost 0 and cap {}".format(
-                    #    s_prime,
-                    #    v,
-                    #    int(-a_exc)))
+                    # print("Adding arc ({}, {}) with cost 0 and cap {}".
+                    #       format(s_prime, v, int(-a_exc)))
                 if a_exc > 0:
                     # add edge (v, t')
                     start_nodes.append(v)
                     end_nodes.append(t_prime)
                     capacities.append(int(a_exc))
                     unit_costs.append(0)
-                    #print("Adding arc ({}, {}) with cost 0 and cap {}".format(
-                    #    v,
-                    #    t_prime,
-                    #    int(a_exc)))
+                    # print("Adding arc ({}, {}) with cost 0 and cap {}".
+                    #       format(v, t_prime, int(a_exc)))
                     # update A
                     A += a_exc
         # process x node
@@ -783,7 +753,7 @@ class IfdAdjList:
             end_nodes.append(x)
             capacities.append(int(-a_exc))
             unit_costs.append(0)
-            #print("Adding arc ({}, {}) with cost 0 and cap {}".format(
+            # print("Adding arc ({}, {}) with cost 0 and cap {}".format(
             #    s_prime,
             #    x,
             #    int(-a_exc)))
@@ -793,7 +763,7 @@ class IfdAdjList:
             end_nodes.append(t_prime)
             capacities.append(int(a_exc))
             unit_costs.append(0)
-            #print("Adding arc ({}, {}) with cost 0 and cap {}".format(
+            # print("Adding arc ({}, {}) with cost 0 and cap {}".format(
             #    x,
             #    t_prime,
             #    int(a_exc)))
@@ -808,18 +778,20 @@ class IfdAdjList:
         # Add each arc.
         for i in range(len(start_nodes)):
             min_cost_flow.AddArcWithCapacityAndUnitCost(start_nodes[i],
-            end_nodes[i], capacities[i], unit_costs[i])
+                                                        end_nodes[i],
+                                                        capacities[i],
+                                                        unit_costs[i])
         # Add node supplies
         for i in range(0, len(supplies)):
             min_cost_flow.SetNodeSupply(i, supplies[i])
         # Find the minimum cost flow between node s' and t'.
         if min_cost_flow.Solve() == min_cost_flow.OPTIMAL:
-            #print('Minimum cost:', min_cost_flow.OptimalCost())
-            #print('')
-            #print(' Arc     Flow / Capacity Cost')
+            # print('Minimum cost:', min_cost_flow.OptimalCost())
+            # print('')
+            # print(' Arc     Flow / Capacity Cost')
             for i in range(min_cost_flow.NumArcs()):
-                cost = min_cost_flow.Flow(i)*min_cost_flow.UnitCost(i)
-                #print('%1s -> %1s   %3s / %3s   %3s' % (
+                # cost = min_cost_flow.Flow(i)*min_cost_flow.UnitCost(i)
+                # print('%1s -> %1s   %3s / %3s   %3s' % (
                 #    min_cost_flow.Tail(i),
                 #    min_cost_flow.Head(i),
                 #    min_cost_flow.Flow(i),
@@ -835,7 +807,7 @@ class IfdAdjList:
                         destin != t_prime and \
                         destin != x:
                     # if forward, increase flow. otherwise decrease.
-                    #print("Processing edge ({}, {})".format(start, destin))
+                    # print("Processing edge ({}, {})".format(start, destin))
                     if start < destin:
                         sup_flow = min_cost_flow.Flow(i)
                     else:
@@ -843,41 +815,40 @@ class IfdAdjList:
                         temp_start = start
                         start = destin
                         destin = temp_start
-                    #print("Has become ({}, {}) with sup {}".format(start,
+                    # print("Has become ({}, {}) with sup {}".format(start,
                     #                                               destin,
                     #                                               sup_flow))
                     arc = self.get_arc(start, destin)
-                    if (sup_flow != 0) or ("lower_bound" not in \
-                            self.arc_info[arc].keys()):
-                        #print("We should add this")
+                    if (sup_flow != 0) or ("lower_bound" not in
+                                           self.arc_info[arc].keys()):
+                        # print("We should add this")
                         old_flow = self.arc_info[arc]["weight"]
                         bound_1 = old_flow + sup_flow
                         bound_2 = old_flow - sup_flow
-                        new_lb = max(0,int(min(bound_1, bound_2)))
+                        new_lb = max(0, int(min(bound_1, bound_2)))
                         new_ub = int(max(bound_1, bound_2))
                         if wide:
                             if new_lb == new_ub:
-                                #print("We had a zero interval")
-                                new_lb =  int(new_lb*0.8)
+                                # print("We had a zero interval")
+                                new_lb = int(new_lb*0.8)
                                 new_ub = int(new_ub*1.2)
                                 if new_lb == 0:
-                                    #print("We got a zero lower bound")
+                                    # print("We got a zero lower bound")
                                     new_ub = 5
-                                #print("But now we're doing {} {}".format(new_lb,
-                                #new_ub))
+                                # print("But now we're doing {} {}".
+                                #       format(new_lb, new_ub))
 
                         self.arc_info[arc]["lower_bound"] = new_lb
                         self.arc_info[arc]["upper_bound"] = new_ub
-                        #print("Edge ({},{}) bounds are [{},{}]".format(
+                        # print("Edge ({},{}) bounds are [{},{}]".format(
                         #    start,
                         #    destin,
                         #    self.arc_info[arc]["lower_bound"],
                         #    self.arc_info[arc]["upper_bound"]))
-                    #print(self.arc_info[arc])
+                    # print(self.arc_info[arc])
         else:
             print('There was an issue with the min cost flow input.')
-        #self.check_conservation_of_flow() # check that solution is valid
-
+        # self.check_conservation_of_flow() # check that solution is valid
 
     def get_weight_from_minflow(self):
         """Use the minflow approach from Traph to find a flow."""
@@ -896,7 +867,7 @@ class IfdAdjList:
             # forward edge
             start_nodes.append(self.arc_info[arc]["start"])
             end_nodes.append(self.arc_info[arc]["destin"])
-            capacities.append(100000) # capacity of 100,000 instead of inf
+            capacities.append(100000)  # capacity of 100,000 instead of inf
             unit_costs.append(1)
             print("Adding arc ({}, {}) with unit cost and cap inf".format(
                 self.arc_info[arc]["start"],
@@ -904,7 +875,7 @@ class IfdAdjList:
             # backward edge
             start_nodes.append(self.arc_info[arc]["destin"])
             end_nodes.append(self.arc_info[arc]["start"])
-            capacities.append(int(self.arc_info[arc]["weight"])) # don't go negative
+            capacities.append(int(self.arc_info[arc]["weight"]))  # no negative
             unit_costs.append(1)
             print("Adding arc ({}, {}) with unit cost and cap inf".format(
                 self.arc_info[arc]["destin"],
