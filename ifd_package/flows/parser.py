@@ -4,7 +4,7 @@
 # under the three-clause BSD license; see LICENSE.
 #
 # local imports
-from flows.graphs import AdjList
+from flows.graphs import IfdAdjList
 # python libs
 import re
 
@@ -15,7 +15,7 @@ def read_sgr(graph_file):
     """Read a single graph from a .sgr file."""
     with open(graph_file, 'r') as f:
         num_nodes = int(f.readline().strip())
-        graph = AdjList(graph_file, None, None, num_nodes)
+        graph = IfdAdjList(graph_file, None, None, num_nodes)
         for line in f:
             edge_data = line.split()
             u = int(edge_data[0])
@@ -40,7 +40,7 @@ def enumerate_graphs(graph_file, exact):
         line = f.readline()
         num_nodes = int(line.strip())
 
-        graph = AdjList(graph_file, graph_number, graph_name, num_nodes)
+        graph = IfdAdjList(graph_file, graph_number, graph_name, num_nodes)
 
         while not line == '':
             last_pos = f.tell()

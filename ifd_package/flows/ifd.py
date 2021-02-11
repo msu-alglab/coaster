@@ -5,7 +5,7 @@ class InexactFlowInstance():
     """
     Inexact Flow Decomposition instance.
 
-    Takes in a graph... (does it have intervals yet?)
+    Takes in an ifd graph.
 
     TODO: description
     ----------

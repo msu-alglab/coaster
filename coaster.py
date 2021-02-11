@@ -11,6 +11,7 @@ import argparse
 import signal
 # import cProfile
 # local imports
+import ifd_package.flows.ifd as ifd
 from os import path
 from os import mkdir
 import sys
@@ -132,6 +133,9 @@ def find_heuristic_sol(reduced, graph, maxtime,):
         with timeout(seconds=maxtime):
             # TODO: use ifd to solve
             # make ifd instance, solve, etc
+            ifd_instance = ifd.InexactFlowInstance(
+                reduced.get_mifd_reduction())
+            # ifd_instance.solve()
             elapsed = time.time() - start
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
             return solution, elapsed

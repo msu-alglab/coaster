@@ -14,8 +14,9 @@ import random
 from ortools.graph import pywrapgraph
 
 
-class AdjList:
-    def __init__(self, graph_file, graph_number, name, num_nodes):
+class IfdAdjList:
+    def __init__(self, graph_file=None, graph_number=None, name=None,
+                 num_nodes=None):
         self.graph_file = graph_file
         self.graph_number = graph_number
         self.name = name
@@ -41,7 +42,6 @@ class AdjList:
             if self.arc_info[arc]["start"] == start \
                         and self.arc_info[arc]["destin"] == destin:
                 return arc
-
 
     def set_paths(self, paths):
         """Set self.paths (for testing)."""
@@ -467,10 +467,9 @@ class AdjList:
         else:
             return []
 
-
     def copy(self):
-        res = AdjList(self.graph_file, self.graph_number, self.name,
-                      len(self))
+        res = IfdAdjList(self.graph_file, self.graph_number, self.name,
+                         len(self))
         res.adj_list = copy.deepcopy(self.adj_list)
         res.inverse_adj_list = copy.deepcopy(self.inverse_adj_list)
         res.out_arcs_lists = copy.deepcopy(self.out_arcs_lists)

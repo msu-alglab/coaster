@@ -7,6 +7,7 @@ import copy
 import time
 from collections import defaultdict
 import itertools
+import ifd_package.flows.graphs as ifd_graphs
 
 
 class AdjList:
@@ -574,6 +575,14 @@ class AdjList:
                     for arc in self.in_arcs_lists[node]:
                         print(self.arc_info[arc]["start"])
                     raise TypeError("This graph is not a flow")
+
+    def get_mifd_reduction(self):
+        """
+        Return an inexact flow graph via reduction from a subpath constraint
+        graph.
+        """
+        ifd_graph = ifd_graphs.IfdAdjList()
+        return ifd_graph
 
 
 def test_paths(graph, pathset):
