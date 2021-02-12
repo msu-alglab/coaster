@@ -79,7 +79,9 @@ class IfdAdjList:
     def check_conservation_of_flow(self):
         """Check that conservation of flow is satisfied by current flow."""
         # for all vertices except first and last (s and t)
-        for vert in range(1, self.num_nodes_at_start - 1):
+        for vert in self.vertices:
+            if vert == self.sink() or vert == self.source():
+                continue
             # check conservation of flow
             flow_in = 0
             for in_arc in self.in_arcs_lists[vert]:
@@ -1109,8 +1111,9 @@ class IfdAdjList:
         capacities.append(int(B))
         # (3): for all verts, if exc > 0, add edge (s', v) with capacity exc(v),
         # and if exc < 0, add edge(s', v) with capacity -exc(v)
-        s_prime = self.sink() + 1
-        t_prime = self.sink() + 2
+        s_prime = max(self.vertices) + 1
+        t_prime = max(self.vertices) + 2
+        print("s'={}, t'={}".format(s_prime, t_prime))
         for v in self:
             #print("vert {} in arcs: {}".format(v,
             #    self.in_arcs_lists[v]))
