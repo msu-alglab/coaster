@@ -672,6 +672,20 @@ class AdjList:
                         print(self.arc_info[arc]["start"])
                     raise TypeError("This graph is not a flow")
 
+    def find_following_subpath_constraint(self, sc1):
+        """Return the subpath constraint that follows this subpath constraint.
+        While multiple subath constraints may overlap, we will take the one
+        with the largest overlap."""
+        overlaps = dict()
+        for sc2 in self.subpath_constraints:
+            if sc1 != sc2:
+                idx = sc2.index(sc1[-1]) if sc1[-1] in sc2 else -1
+                overlap2 = sc2[:idx + 1]  # include idx
+                overlap1 = sc1[-len(overlap2):]
+                if overlap1 == overlap2 and len(overlap2) > 0:
+                    overlaps[len(overlap1)] = sc2
+        return overlaps[max(overlaps.keys())] if len(overlaps) > 0 else None
+
     def get_mifd_reduction(self):
         """
         Return an inexact flow graph via reduction from a subpath constraint
@@ -710,6 +724,15 @@ class AdjList:
             ifd_graph.add_inexact_edge(node_id1, node_id2, d, self.flow())
             ifd_graph.add_inexact_edge(node_id2, sc[-1], 0, self.flow())
         # add edges for any consecutive subpath constraints
+        for sc in self.subpath_constraints:
+            next_sc = self.find_following_subpath_constraint(sc)
+            print("sc {} overlaps with {}".format(sc, next_sc))
+            if next_sc:
+                # connect sc to next_sc in graph
+                idx1 = s_prime_id + 2*self.subpath_constraints.index(sc) + 2
+                idx2 = s_prime_id +\
+                    2*self.subpath_constraints.index(next_sc) + 1
+                ifd_graph.add_inexact_edge(idx1, idx2, 0, self.flow())
         print("Added subpath constraint edges. Current mifd graph:")
         ifd_graph.print_out()
         return ifd_graph
