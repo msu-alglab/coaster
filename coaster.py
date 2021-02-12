@@ -135,7 +135,14 @@ def find_heuristic_sol(graph, maxtime,):
             # make ifd instance, solve, etc
             ifd_instance = ifd.InexactFlowInstance(
                 graph.get_mifd_reduction())
-            # ifd_instance.solve()
+            ifd_instance.solve()
+            paths = ifd_instance.graph.get_paths()
+            weights = ifd_instance.graph.get_weights()
+            for p, w in zip(paths, weights):
+                node_seq = [ifd_instance.graph.source()]
+                for arc in p:
+                    node_seq.append(ifd_instance.graph.arc_info[arc]['destin'])
+                print(" ".join([str(x) for x in [w] + node_seq]))
             elapsed = time.time() - start
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
             return solution, elapsed
