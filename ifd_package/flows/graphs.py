@@ -35,6 +35,7 @@ class IfdAdjList:
         self.interval_udpates = 0
         self.pairwise_rebalances = 0
         self.pairwise_splices = 0
+        self.mapping = dict()  # for storing how to undo reduction
 
     def get_arc(self, start, destin):
         for arc in self.arc_info.keys():
@@ -150,6 +151,43 @@ class IfdAdjList:
             arc = path[-1]
             arc_end = self.arc_info[arc]["destin"]
             assert(arc_end == self.sink()), "Path does not end at t"
+
+    def convert_paths(self):
+        """Convert paths in the ifd graph to node sequences (instead of edge
+        sequences), and then to nodes in the original graph."""
+        self.nodeseq_paths = []
+        for path in self.paths:
+            node_seq = []
+            for arc in path:
+                node_seq.append(self.arc_info[arc]['destin'])
+            self.nodeseq_paths.append(node_seq)
+        # convert to og graph
+        self.converted_paths = []
+        for path in self.nodeseq_paths:
+            this_path = []
+            add_next_node = True
+            for i in range(len(path) - 1):
+                print("This path is", this_path)
+                node1 = path[i]
+                node2 = path[i + 1]
+                print("node1={}, node2={}".format(node1, node2))
+                if (node1, node2) in self.mapping:
+                    sc = self.mapping[(node1, node2)]
+                    print("uses sc edge for {}".format(sc))
+                    assert path[i - 1] == sc[0]
+                    assert path[i + 2] == sc[-1]
+                    print("should add {}".format(sc[1:-1]))
+                    this_path.extend(sc[1:-1])
+                    add_next_node = False
+                elif add_next_node:
+                    this_path.append(node1)
+                else:
+                    add_next_node = True
+            this_path.append(path[-1])
+            self.converted_paths.append(this_path)
+
+    def get_converted_paths(self):
+        return self.converted_paths
 
     def get_paths(self):
         """Get the set of paths"""

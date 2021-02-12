@@ -723,6 +723,7 @@ class AdjList:
             ifd_graph.add_inexact_edge(sc[0], node_id1, 0, self.flow())
             ifd_graph.add_inexact_edge(node_id1, node_id2, d, self.flow())
             ifd_graph.add_inexact_edge(node_id2, sc[-1], 0, self.flow())
+            ifd_graph.mapping[(node_id1, node_id2)] = sc
         # add edges for any consecutive subpath constraints
         for sc in self.subpath_constraints:
             next_sc = self.find_following_subpath_constraint(sc)
