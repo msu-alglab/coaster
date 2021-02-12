@@ -33,16 +33,19 @@ class SimpleGraph:
         visited[v] = True
         # print("neighbors are", self.adj_list[v])
         for neighbor in self.adj_list[v]:
+            # print("checking out", neighbor)
             if visited[neighbor] and neighbor != parent:
                 # print("seen this node from elsewhere -- returning true")
                 return True
             if not visited[neighbor]:
-                return self.dfs(neighbor, visited, v)
+                # print("not visited", neighbor)
+                self.dfs(neighbor, visited, v)
         return False
 
     def is_acyclic(self):
         visited = dict(zip(self.nodes, [False] * len(self.nodes)))
         while False in list(visited.values()):
+            print("checking a new conn.comp.")
             unvisited = [v for v in visited if visited[v] is False]
             v = unvisited[0]
             cycles = self.dfs(v, visited, parent=-1)
@@ -111,6 +114,7 @@ class AdjList:
             for i in range(len(sc) - 1):
                 if not sc_graph.has_edge(sc[i], sc[i + 1]):
                     sc_graph.add_edge(sc[i], sc[i + 1])
+                    print("added edge ({},{})".format(sc[i], sc[i + 1]))
         # todo: can we use this to decide whether sc_graph contains cycles
         sc_graph.is_acyclic()
 
