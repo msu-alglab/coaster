@@ -155,9 +155,10 @@ class IfdAdjList:
     def convert_paths(self):
         """Convert paths in the ifd graph to node sequences (instead of edge
         sequences), and then to nodes in the original graph."""
+        # convert to node sequences, dropping s'
         self.nodeseq_paths = []
         for path in self.paths:
-            node_seq = []
+            node_seq = []  # don't include s'
             for arc in path:
                 node_seq.append(self.arc_info[arc]['destin'])
             self.nodeseq_paths.append(node_seq)
@@ -174,11 +175,14 @@ class IfdAdjList:
                 if (node1, node2) in self.mapping:
                     sc = self.mapping[(node1, node2)]
                     print("uses sc edge for {}".format(sc))
-                    assert path[i - 1] == sc[0]
-                    assert path[i + 2] == sc[-1]
-                    print("should add {}".format(sc[1:-1]))
-                    this_path.extend(sc[1:-1])
-                    add_next_node = False
+                    print("should add {}, but also need to check for overlaps".format(sc[1:-1]))
+                    if sc[1] in this_path:
+                        # we have an overlap
+                        start = len(this_path) - this_path.index(sc[1])
+                        this_path.extend(sc[start:-1])
+                    else:
+                        this_path.extend(sc[1:-1])
+                    add_next_node = False  # next node is second of sc edge
                 elif add_next_node:
                     this_path.append(node1)
                 else:
