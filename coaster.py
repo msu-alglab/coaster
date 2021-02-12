@@ -117,10 +117,10 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
         return set(), elapsed
 
 
-def find_heuristic_sol(reduced, graph, maxtime,):
+def find_heuristic_sol(graph, maxtime,):
     """
     Find a flow decomposition for instance. NOTE: unsure whether this works for
-    cyclic instances. TODO: add statsfile.
+    cyclic instances. TODO: add statsfile. TODO: can we use the reduced graph?
 
     This is the main function for running the heuristic version of Coaster.
     """
@@ -134,7 +134,7 @@ def find_heuristic_sol(reduced, graph, maxtime,):
             # TODO: use ifd to solve
             # make ifd instance, solve, etc
             ifd_instance = ifd.InexactFlowInstance(
-                reduced.get_mifd_reduction())
+                graph.get_mifd_reduction())
             # ifd_instance.solve()
             elapsed = time.time() - start
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
@@ -304,8 +304,7 @@ if __name__ == "__main__":
 
             k_cutset = instance.max_edge_cut_size  # this is for reporting
             if args.heuristic:
-                solution, time_weights = find_heuristic_sol(graph, reduced,
-                                                            maxtime)
+                solution, time_weights = find_heuristic_sol(graph, maxtime)
             else:
                 solution, time_weights = find_exact_sol(instance, maxtime,
                                                         max_k, stats_out)

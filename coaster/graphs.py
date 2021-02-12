@@ -10,6 +10,46 @@ import itertools
 import ifd_package.flows.graphs as ifd_graphs
 
 
+class SimpleGraph:
+    """For checking that subpath constraints are acyclic."""
+    def __init__(self):
+        self.adj_list = defaultdict(list)
+        self.nodes = set()
+
+    def add_edge(self, u, v):
+        self.adj_list[u].append(v)
+        self.adj_list[v].append(u)
+        self.nodes.add(u)
+        self.nodes.add(v)
+
+    def has_edge(self, u, v):
+        return v in self.adj_list[u] or u in self.adj_list[v]
+
+    def dfs(self, v, visited, parent):
+        """Cycle if we see a node that has already been visited by some path
+        other than the current one."""
+        # print("v is", v)
+        # print("parent is", parent)
+        visited[v] = True
+        # print("neighbors are", self.adj_list[v])
+        for neighbor in self.adj_list[v]:
+            if visited[neighbor] and neighbor != parent:
+                # print("seen this node from elsewhere -- returning true")
+                return True
+            if not visited[neighbor]:
+                return self.dfs(neighbor, visited, v)
+        return False
+
+    def is_acyclic(self):
+        visited = dict(zip(self.nodes, [False] * len(self.nodes)))
+        while False in list(visited.values()):
+            unvisited = [v for v in visited if visited[v] is False]
+            v = unvisited[0]
+            cycles = self.dfs(v, visited, parent=-1)
+            if cycles:
+                raise TypeError("Subpath constraints are cyclic")
+
+
 class AdjList:
     def __init__(self, graph_file=None, graph_number=None, name=None,
                  num_nodes=None):
@@ -52,6 +92,34 @@ class AdjList:
         print("Subpath constraints are:", self.subpath_constraints)
         print("Demands are:", self.subpath_demands)
 
+    def check_nonnested(self):
+        """Raise an exception if the subpath constraints are nested. To run the
+        reduction to MIFD, we need that subpath constraints are nonnested"""
+        # compare each with each for nestedness
+        for i in range(len(self.subpath_constraints)):
+            for j in range(len(self.subpath_constraints)):
+                if i != j:
+                    if str(self.subpath_constraints[i])[1:-1]\
+                            in str(self.subpath_constraints[j])[1:-1]:
+                        raise TypeError("Subpath constraints are nested")
+
+    def check_acyclic_scs(self):
+        """Raise an exception if the subpath constraints form any cycles,
+        ignoring edge directions."""
+        sc_graph = SimpleGraph()
+        for sc in self.subpath_constraints:
+            for i in range(len(sc) - 1):
+                if not sc_graph.has_edge(sc[i], sc[i + 1]):
+                    sc_graph.add_edge(sc[i], sc[i + 1])
+        # todo: can we use this to decide whether sc_graph contains cycles
+        sc_graph.is_acyclic()
+
+    def check_ann(self):
+        """Check that the subpath constraints work for heuristic method using
+        MIFD reduction."""
+        self.check_nonnested()
+        self.check_acyclic_scs()
+
     def out_arcs(self, node):
         return self.out_arcs_lists[node]
 
@@ -60,6 +128,20 @@ class AdjList:
 
     def arcs(self):
         return self.arc_info.items()
+
+    def arc_id(self, u, v):
+        """Return the arc_id of a edge between two nodes. Throws exception if
+        there is more than one arc_id between two edges, so should not be used
+        on reduced graphs."""
+        arcs = []
+        for arc, info in self.arc_info.items():
+            if info["start"] == u and info["destin"] == v:
+                arcs.append(arc)
+        if len(arcs) > 1:
+            raise TypeError("This graph has multiple edges between {} and {}".
+                            format(u, v))
+        else:
+            return arcs[0] if len(arcs) == 1 else None
 
     def __len__(self):
         return len(self.vertices)
@@ -110,6 +192,20 @@ class AdjList:
 
     def out_neighborhood(self, u):
         return self.neighborhood(u)
+
+    def flow(self):
+        """Return the total flow leaving s (entering t)"""
+        neighborhood_info = self.labeled_neighborhood(self.source())
+        flows = [x[1] for x in neighborhood_info]
+        return sum(flows)
+
+    def sc_arcs(self):
+        """Return a set of arcs that are contained in subpaths."""
+        arcs = set()
+        for sc in self.subpath_constraints:
+            for i in range(len(sc) - 1):
+                arcs.add(self.arc_id(sc[i], sc[i + 1]))
+        return arcs
 
     def in_neighborhood(self, u):
         if u in self.inverse_adj_list:
@@ -581,7 +677,41 @@ class AdjList:
         Return an inexact flow graph via reduction from a subpath constraint
         graph.
         """
+        self.check_ann()  # we require that subpaths ANN
         ifd_graph = ifd_graphs.IfdAdjList()
+        # add s' with edge to s
+        ifd_graph.add_inexact_edge(max(self.vertices) + 1, self.source(),
+                                   self.flow(), self.flow())
+        print("Added s'->s edge. Current mifd graph:")
+        ifd_graph.print_out()
+        # add all original edges
+        for arc, info in self.arc_info.items():
+            start = info["start"]
+            destin = info["destin"]
+            weight = info["weight"]
+            if arc in self.sc_arcs():
+                # original subpath edge: interval = [0, flow]
+                ifd_graph.add_inexact_edge(start, destin, 0, weight)
+            else:
+                # original non subpath edge: interval = [flow, flow]
+                ifd_graph.add_inexact_edge(start, destin, weight, weight)
+        print("Added original edges. Current mifd graph:")
+        ifd_graph.print_out()
+        # add subpath constraint edges
+        s_prime_id = ifd_graph.source()  # add scs relative to this node id
+        counter = 1
+        for sc, d in zip(self.subpath_constraints, self.subpath_demands):
+            # add three edges: sc start to sc edge, sc edge, and sc edge to sc
+            # end
+            node_id1 = s_prime_id + counter
+            node_id2 = s_prime_id + counter + 1
+            counter += 2
+            ifd_graph.add_inexact_edge(sc[0], node_id1, 0, self.flow())
+            ifd_graph.add_inexact_edge(node_id1, node_id2, d, self.flow())
+            ifd_graph.add_inexact_edge(node_id2, sc[-1], 0, self.flow())
+        # add edges for any consecutive subpath constraints
+        print("Added subpath constraint edges. Current mifd graph:")
+        ifd_graph.print_out()
         return ifd_graph
 
 
