@@ -20,7 +20,7 @@ python coaster.py [input-file]
 
 Coaster can be run in heuristic mode to find solutions in larger graphs.
 
-*TODO: does heuristic mode work on cyclic graphs?*
+*TODO: check exactly when heuristic mode works on cyclic graphs.*
 
 ```
 python coaster.py [input-file] --heuristic
