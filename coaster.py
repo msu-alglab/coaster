@@ -143,6 +143,9 @@ def find_heuristic_sol(graph, maxtime,):
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
         return set(), maxtime
+    except TypeError:
+        print("TypeError in graph")
+        return set(), 0
 
 
 if __name__ == "__main__":
@@ -225,7 +228,6 @@ if __name__ == "__main__":
     if path.isfile(truth_file):
         print("# Ground-truth available in file {}".format(truth_file))
     else:
-        print("# No ground-truth available. Guessing parameter.")
         truth_file = None
 
     # Iterate over every graph-instance inside the input file
@@ -297,16 +299,16 @@ if __name__ == "__main__":
             else:
                 weights = [0]
         else:
-            k_start = 1
-            instance = Instance(scc_reduced, k_start, reduced, sccs)
-            k_improve = instance.best_cut_lower_bound
-            print("# Reduced instance has n = {}, m = {}, and lower_bound "
-                  "= {}:".format(n, m, instance.k), flush=True)
-
-            k_cutset = instance.max_edge_cut_size  # this is for reporting
             if args.heuristic:
                 solution, time_weights = find_heuristic_sol(graph, maxtime)
             else:
+                k_start = 1
+                instance = Instance(scc_reduced, k_start, reduced, sccs)
+                k_improve = instance.best_cut_lower_bound
+                print("# Reduced instance has n = {}, m = {}, and lower_bound "
+                      "= {}:".format(n, m, instance.k), flush=True)
+
+                k_cutset = instance.max_edge_cut_size  # this is for reporting
                 solution, time_weights = find_exact_sol(instance, maxtime,
                                                         max_k, stats_out)
             if solution:
