@@ -26,6 +26,19 @@ Coaster can be run in heuristic mode to find solutions in larger graphs.
 python coaster.py [input-file] --heuristic
 ```
 
+### Testing
+
+The directory `big_sc_test` contains 1020 graphs with 4 subpath constraints
+each. Many are not ANN. But can run
+
+```
+python coaster.py big_sc_test/sc0.graph --heuristic
+```
+
+and see if any errors occur.
+
+*TODO: use a testing module*
+
 ### Submodules
 
 The directory `ifd-package` contains code for an inexact flow solver, which is
