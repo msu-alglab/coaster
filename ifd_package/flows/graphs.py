@@ -507,6 +507,20 @@ class IfdAdjList:
             for (v, flow) in self.adj_list[u]:
                 yield (u, v, flow)
 
+    def arc_id(self, u, v):
+        """Return the arc_id of a edge between two nodes. Throws exception if
+        there is more than one arc_id between two edges, so should not be used
+        on reduced graphs."""
+        arcs = []
+        for arc, info in self.arc_info.items():
+            if info["start"] == u and info["destin"] == v:
+                arcs.append(arc)
+        if len(arcs) > 1:
+            raise TypeError("This graph has multiple edges between {} and {}".
+                            format(u, v))
+        else:
+            return arcs[0] if len(arcs) == 1 else None
+
     def num_edges(self):
         return sum(1 for _ in self.edges())
 
@@ -630,6 +644,18 @@ class IfdAdjList:
             G.add_edge(u, w)
         nx.draw(G)
         plt.show()
+
+    def write_graphviz(self, filename):
+        f = open(filename, "w")
+        f.write("digraph G {\n")
+        f.write("rankdir=LR;\n")
+        for u, v, _ in self.edges():
+            arc = self.arc_id(u, v)
+            lb = self.arc_info[arc]["lower_bound"]
+            ub = self.arc_info[arc]["upper_bound"]
+            f.write("{} -> {} [ label = \"[{},{}]\" ];\n".format(u, v, lb, ub))
+        f.write("}")
+        f.close()
 
     def write_graph_to_file(self, filename):
         """Write interval graph to file."""
