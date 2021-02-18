@@ -28,14 +28,21 @@ python coaster.py [input-file] --heuristic
 
 ### Testing
 
-The directory `big_sc_test` contains 1020 graphs with 4 subpath constraints
-each. Many are not ANN. But can run
+The directory `big_sc_test` contains 5,291 graphs with 2 subpath constraints
+each. Only 52 of them are ANN. But can run
 
 ```
 python coaster.py big_sc_test/sc0.graph --heuristic
 ```
 
 and see if any errors occur.
+
+This data file was created by running the following from the `coaster-experiments`
+repository:
+
+```
+python create_sc_instances.py basic_instances/ acyclic_sc_graph_instances/ acyclic_sc_graph_instances 2 False 2 100000
+```
 
 *TODO: use a testing module*
 
