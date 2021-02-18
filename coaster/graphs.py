@@ -630,6 +630,29 @@ class AdjList:
         nx.draw(G, pos, with_labels=True)
         plt.savefig(filename)
 
+    def write_graphviz(self, filename):
+        colors = ["deeppink1", "deepskyblue1", "darkorchid1", "darkorange"]
+        f = open(filename, "w")
+        f.write("digraph G {\n")
+        f.write("rankdir=LR;\n")
+        counter = 0
+        subpath_edges = defaultdict(list)
+        # get color lists for edges
+        for sc in self.subpath_constraints:
+            for (u, v) in zip(sc, sc[1:]):
+                color = colors[counter % 4]
+                subpath_edges[u, v].append(color)
+            counter += 1
+        for u, v, w in self.edges():
+            if (u, v) in subpath_edges:
+                color = ":invis:".join(subpath_edges[(u, v)])
+            else:
+                color = "black"
+            f.write("{} -> {} [ label = {}, color = \"{}\" ];\n".format(
+                u, v, w, color))
+        f.write("}")
+        f.close()
+
     def print_out(self):
         """Print the graph to screen."""
         for node in self.vertices:
@@ -740,6 +763,7 @@ class AdjList:
                 ifd_graph.add_inexact_edge(idx1, idx2, 0, self.flow())
         print("Added subpath constraint edges. Current mifd graph:")
         ifd_graph.print_out()
+        ifd_graph.write_graphviz("reduced_graph.dot")
         return ifd_graph
 
 

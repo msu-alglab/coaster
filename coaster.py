@@ -260,6 +260,7 @@ if __name__ == "__main__":
         if args.print_contracted:
             print("Original graph is:")
             graph.print_out()
+        graph.write_graphviz("original_graph.dot")
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
