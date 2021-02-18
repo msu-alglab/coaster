@@ -240,6 +240,7 @@ if __name__ == "__main__":
 
         if instances and index not in instances:
             continue
+        print("This is graph index {}".format(index))
         n_input = len(graph)
         m_input = len(list(graph.edges()))
         k_gtrue = k if k else "?"
