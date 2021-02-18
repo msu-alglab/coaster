@@ -15,40 +15,50 @@ class SimpleGraph:
     def __init__(self):
         self.adj_list = defaultdict(list)
         self.nodes = set()
+        self.edges = set()
 
     def add_edge(self, u, v):
         self.adj_list[u].append(v)
         self.adj_list[v].append(u)
         self.nodes.add(u)
         self.nodes.add(v)
+        self.edges.add((u, v))
+        self.edges.add((v, u))
 
     def has_edge(self, u, v):
         return v in self.adj_list[u] or u in self.adj_list[v]
 
-    def dfs(self, v, visited, parent):
-        """Cycle if we see a node that has already been visited by some path
-        other than the current one."""
-        # print("v is", v)
-        # print("parent is", parent)
-        visited[v] = True
-        # print("neighbors are", self.adj_list[v])
+    def dfs(self, v, visited_edges, visited_nodes, parent):
+        """We know that there is a cycle if we see a node that has already been
+        visited by some path other than the current one."""
+        print("v is", v)
+        print("parent is", parent)
+        visited_nodes[v] = True
+        visited_edges[(parent, v)] = True
+        visited_edges[(v, parent)] = True
+        print("neighbors are", self.adj_list[v])
         for neighbor in self.adj_list[v]:
-            # print("checking out", neighbor)
-            if visited[neighbor] and neighbor != parent:
-                # print("seen this node from elsewhere -- returning true")
+            print("checking out", neighbor)
+            if visited_nodes[neighbor] and neighbor != parent:
+                print("seen this node from elsewhere -- returning true")
                 return True
-            if not visited[neighbor]:
-                # print("not visited", neighbor)
-                self.dfs(neighbor, visited, v)
+            else:
+                print("this node is parent -- don't explore")
+            if not visited_nodes[neighbor]:
+                print("not visited", neighbor)
+                self.dfs(neighbor, visited_edges, visited_nodes, v)
         return False
 
     def is_acyclic(self):
-        visited = dict(zip(self.nodes, [False] * len(self.nodes)))
-        while False in list(visited.values()):
+        visited_nodes = dict(zip(self.nodes, [False] * len(self.nodes)))
+        visited_edges = dict(zip(self.edges, [False] * len(self.edges)))
+        while False in list(visited_edges.values()):
             print("checking a new conn.comp.")
-            unvisited = [v for v in visited if visited[v] is False]
-            v = unvisited[0]
-            cycles = self.dfs(v, visited, parent=-1)
+            unvisited_edges = [e for e in visited_edges if visited_edges[e]
+                               is False]
+            print("unvisited_edges is", unvisited_edges)
+            v = unvisited_edges[0][0]
+            cycles = self.dfs(v, visited_edges, visited_nodes, parent=-1)
             if cycles:
                 raise TypeError("Subpath constraints are cyclic")
 
