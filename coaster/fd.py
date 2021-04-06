@@ -35,13 +35,19 @@ class ExactFlowInstance:
         Convert each subpath constraint into a bridge edge, and subtract its
         demand from the flow on the edges it covers
         """
+        print(self.reduced_graph.adj_list)
         self.corresponding_edges = defaultdict(list)
-        for sc, d in zip(self.graph.subpath_constraints,
-                         self.graph.subpath_demands):
-            self.reduced_graph.add_edge(sc[0], sc[-1], d)
-            self.corresponding_edges[(sc[0], sc[-1])] = sc
-            for u, v in zip(sc, sc[1:]):
-                self.reduced_graph.remove_weight(d, u, v)
+        for sc_nodes, d in zip(self.graph.subpath_constraints,
+                               self.graph.subpath_demands):
+            sc = self.reduced_graph.convert_nodeseq_to_arcs(sc_nodes)
+            print("reducing based on sc (nodes)", sc_nodes)
+            print("arc id based:", sc)
+            start = self.reduced_graph.arc_info[sc[0]]["start"]
+            end = self.reduced_graph.arc_info[sc[-1]]["destin"]
+            new_arc_id = self.reduced_graph.add_edge(start, end, d)
+            self.corresponding_edges[new_arc_id] = sc_nodes
+            for arc_id in sc:
+                self.reduced_graph.remove_weight_by_arc_id(d, arc_id)
         self.reduced_graph.subpath_constraints = []
         self.reduced_graph.subpath_demands = []
         self.reduced_graph.check_flow()
@@ -62,24 +68,24 @@ class ExactFlowInstance:
         self.paths = []
         self.weights = self.reduced_graph.weights
         print("paths are", self.reduced_graph.paths)
+        print("corresponding edges is", self.corresponding_edges)
         for path in self.reduced_graph.paths:
-            nodeseq = self.reduced_graph.convert_arcseq_to_nodes(path)
-            print("nodeseq is", nodeseq)
-            rev_nodeseq = nodeseq[::-1]
             new_path = []
-            # go through path backward to replace bridge edges with their
-            # corresponding scs
-            print("rev_nodeseq is", rev_nodeseq)
-            for v, u in zip(rev_nodeseq, rev_nodeseq[1:]):
-                print("v,u is", v, u)
-                if (u, v) in self.corresponding_edges:
-                    # two scs can start and end at the same node. how do we
-                    # tell them apart?
+            print("processing path", path)
+            for arc_id in path:
+                print("arc_id is", arc_id)
+                if arc_id in self.corresponding_edges:
                     print("is a sc")
-                    new_path = self.corresponding_edges[(u, v)] + new_path
+                    new_path += self.corresponding_edges[arc_id]
                 else:
                     print("not an sc")
-                    new_path = [v] + new_path
+                    # if this is the first arc_id we are adding, add both first
+                    # and last node
+                    if len(new_path) == 0:
+                        new_path +=\
+                            [self.reduced_graph.arc_info[arc_id]["start"]]
+                    new_path += [self.reduced_graph.arc_info[arc_id]["destin"]]
+
                 print("new path is", new_path)
             self.paths.append(new_path)
             print(self.paths)

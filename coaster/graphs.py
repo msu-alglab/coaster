@@ -99,6 +99,7 @@ class AdjList:
         self.out_arcs_lists[u].append(this_label)
         self.in_arcs_lists[v].append(this_label)
         self.max_arc_label += 1
+        return this_label
 
     def add_subpath_constraint(self, L, d):
         self.subpath_constraints.append(L)
@@ -237,7 +238,21 @@ class AdjList:
                 self.adj_list[u].append((w, flow - weight))
                 self.inverse_adj_list[v].remove((u, flow))
                 self.inverse_adj_list[v].append((u, flow - weight))
-                self.arc_info[self.arc_id(u, v)]["weight"] -= weight
+                break
+
+    def remove_weight_by_arc_id(self, weight, arc_id):
+        """If there is a possibility of multiple arcs between two nodes, we
+        should remove weight by arc_id instead of by node ids."""
+        old_weight = self.arc_info[arc_id]["weight"]
+        u = self.arc_info[arc_id]["start"]
+        v = self.arc_info[arc_id]["destin"]
+        for (w, flow) in self.adj_list[u]:
+            if w == v and flow == old_weight:
+                self.adj_list[u].remove((w, flow))
+                self.adj_list[u].append((w, flow - weight))
+                self.inverse_adj_list[v].remove((u, flow))
+                self.inverse_adj_list[v].append((u, flow - weight))
+                self.arc_info[arc_id]["weight"] = flow - weight
                 break
 
     def copy(self):
