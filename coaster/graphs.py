@@ -5,6 +5,7 @@
 #
 import copy
 import time
+import queue
 from collections import defaultdict
 import itertools
 import ifd_package.flows.graphs as ifd_graphs
@@ -80,6 +81,8 @@ class AdjList:
         self.subpath_constraints = list()
         self.subpath_demands = list()
         self.mapping = None
+        self.paths = []
+        self.weights = []
 
     def add_edge(self, u, v, flow):
         self.vertices.add(u)
@@ -710,6 +713,72 @@ class AdjList:
                     for arc in self.in_arcs_lists[node]:
                         print(self.arc_info[arc]["start"])
                     raise TypeError("This graph is not a flow")
+
+    def unexplained_flow(self):
+        flows = [self.arc_info[arc]["unexplained_flow"]
+                 for arc in self.arc_info]
+        return(sum(flows) > 0)
+
+    def run_greedy_width(self):
+        """
+        Find a greedy-width solution for the given flow graph.
+        """
+        print("\nRunning greedy width to find an initial path solution.")
+        for arc in self.arc_info:
+            self.arc_info[arc]["unexplained_flow"] =\
+                self.arc_info[arc]["weight"]
+        tries = 0
+        while self.unexplained_flow():
+            tries += 1
+            # don't keep going forever
+            assert tries < 1000
+            self.run_dijkstra()
+
+    # from https://startupnextdoor.com/dijkstras-algorithm-in-python-3/
+    def run_dijkstra(self):
+        q = queue.PriorityQueue()
+        parents = dict()
+        widths = dict()
+        start_weight = 0
+        source = self.source()
+        dest = self.sink()
+
+        for v in self.vertices:
+            weight = start_weight
+            if v == source:
+                weight = float("inf")
+            widths[v] = weight
+            parents[v] = None
+
+        q.put(([0, source]))
+
+        while not q.empty():
+            v_tuple = q.get()
+            v = v_tuple[1]
+            for e in self.out_arcs_lists[v]:
+                weight = self.arc_info[e]["unexplained_flow"]
+                e_dest = self.arc_info[e]["destin"]
+                current_min_width = widths[e_dest]
+                width_to_v = widths[v]
+                candidate_min_width = min(width_to_v, weight)
+                if current_min_width < candidate_min_width:
+                    widths[e_dest] = candidate_min_width
+                    parents[e_dest] = e
+                    q.put(([widths[e_dest], e_dest]))
+
+        shortest_path = []
+        edge = parents[dest]
+        while edge is not None:
+            shortest_path.append(edge)
+            previous_vertex = self.arc_info[edge]["start"]
+            edge = parents[previous_vertex]
+
+        flow = widths[dest]
+        shortest_path.reverse()
+        for edge in shortest_path:
+            self.arc_info[edge]["unexplained_flow"] -= flow
+        self.paths.append(shortest_path)
+        self.weights.append(flow)
 
     def find_following_subpath_constraint(self, sc1):
         """Return the subpath constraint that follows this subpath constraint.
