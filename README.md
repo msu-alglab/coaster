@@ -16,14 +16,15 @@ FPT mode is the default mode for Coaster. It can be run using
 python coaster.py [input-file]
 ```
 
-#### Heuristic mode
+#### IFD Heuristic mode
 
-Coaster can be run in heuristic mode to find solutions in larger graphs.
+Coaster can be run in IFD heuristic mode to find solutions in larger graphs using a reduction to IFD.
+Note that this requires acyclic, non-nested subpath constraints, which is quite limiting.
 
 *TODO: check exactly when heuristic mode works on cyclic graphs.*
 
 ```
-python coaster.py [input-file] --heuristic
+python coaster.py [input-file] --ifd_heuristic
 ```
 
 ### Testing
@@ -32,7 +33,7 @@ The directory `big_sc_test` contains 5,291 graphs with 2 subpath constraints
 each. Only 52 of them are ANN. But can run
 
 ```
-python coaster.py big_sc_test/sc0.graph --heuristic
+python coaster.py big_sc_test/sc0.graph --ifd_heuristic
 ```
 
 and see if any errors occur.

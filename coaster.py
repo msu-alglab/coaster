@@ -118,17 +118,17 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
         return set(), elapsed
 
 
-def find_heuristic_sol(graph, maxtime,):
+def find_ifd_heuristic_sol(graph, maxtime,):
     """
     Find a flow decomposition for instance. NOTE: unsure whether this works for
     cyclic instances. TODO: add statsfile. TODO: can we use the reduced graph?
 
-    This is the main function for running the heuristic version of Coaster.
+    This is the main function for running the IFD heuristic version of Coaster.
     """
 
     if maxtime is None:
         maxtime = -1
-    print("Searching for heuristic solution. Timeout set at {}"
+    print("Searching for IFD heuristic solution. Timeout set at {}"
           "".format(maxtime))
     try:
         with timeout(seconds=maxtime):
@@ -179,7 +179,7 @@ if __name__ == "__main__":
                         action='store_true')
     parser.add_argument("--max_k", help="Largest k to consider for any graph",
                         type=int)
-    parser.add_argument('--heuristic', default=False, action='store_true')
+    parser.add_argument('--ifd_heuristic', default=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -302,8 +302,8 @@ if __name__ == "__main__":
             else:
                 weights = [0]
         else:
-            if args.heuristic:
-                solution, time_weights = find_heuristic_sol(graph, maxtime)
+            if args.ifd_heuristic:
+                solution, time_weights = find_ifd_heuristic_sol(graph, maxtime)
             else:
                 k_start = 1
                 instance = Instance(scc_reduced, k_start, reduced, sccs)
