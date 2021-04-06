@@ -15,7 +15,6 @@ class ExactFlowInstance:
         if len(self.overdemands) > 0:
             raise Exception("Overdemanded edge", self.overdemands)
         self.reduced_graph = self.graph.copy()
-        self.create_reduced_graph()
 
     def compute_overdemands(self):
         demands = defaultdict(int)
@@ -45,3 +44,12 @@ class ExactFlowInstance:
         self.reduced_graph.subpath_demands = []
         self.reduced_graph.check_flow()
         self.reduced_graph.write_graphviz("fd_reduced.dot")
+
+    def solve(self):
+        """
+        Step 1: get rid of overdemanded edges (not implemented).
+        Step 2: create FD reduction.
+        Step 3: find a path solution.
+        """
+        self.create_reduced_graph()
+        self.reduced_graph.run_greedy_width()

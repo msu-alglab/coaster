@@ -164,9 +164,7 @@ def find_fd_heuristic_sol(graph, maxtime,):
     try:
         with timeout(seconds=maxtime):
             fd_instance = fd.ExactFlowInstance(graph)
-            # ifd_instance = ifd.InexactFlowInstance(
-            #     graph.get_mifd_reduction())
-            # ifd_instance.solve()
+            fd_instance.solve()
             # ifd_instance.graph.convert_paths()
             # paths = ifd_instance.graph.get_converted_paths()
             # weights = ifd_instance.graph.get_weights()
