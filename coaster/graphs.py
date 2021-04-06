@@ -692,6 +692,14 @@ class AdjList:
             path_arcs.append(arc)
         return path_arcs
 
+    def convert_arcseq_to_nodes(self, path):
+        """Take a path as a sequence of arc ids and return the same path as a
+        sequence of arc ids. Only works on graphs with no multiedges."""
+        new_path = [self.arc_info[path[0]]["start"]]
+        for arc in path:
+            new_path.append(self.arc_info[arc]["destin"])
+        return new_path
+
     def check_flow(self):
         """Return whether or not the graph satisfies conservation of flow at
         all non-source, non-sink nodes."""

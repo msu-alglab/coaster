@@ -165,13 +165,16 @@ def find_fd_heuristic_sol(graph, maxtime,):
         with timeout(seconds=maxtime):
             fd_instance = fd.ExactFlowInstance(graph)
             fd_instance.solve()
-            # ifd_instance.graph.convert_paths()
-            # paths = ifd_instance.graph.get_converted_paths()
-            # weights = ifd_instance.graph.get_weights()
+            fd_instance.convert_paths()
+            paths = fd_instance.paths
+            weights = fd_instance.weights
             elapsed = time.time() - start
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
-            # return (paths, weights), elapsed
-            return set(), elapsed
+            print("paths are:")
+            print(paths)
+            print("weights are")
+            print(weights)
+            return (paths, weights), elapsed
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
         return set(), maxtime
