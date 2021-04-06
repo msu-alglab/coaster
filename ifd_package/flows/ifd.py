@@ -13,6 +13,7 @@ class InexactFlowInstance():
     TODO
     """
     def __init__(self, graph, silent=True):
+        # self.graph is a IfdAdjList object
         self.graph = graph
         self.silent = silent
         self.reduced, self.mapping = graph.contracted()
