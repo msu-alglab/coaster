@@ -27,6 +27,15 @@ Note that this requires acyclic, non-nested subpath constraints, which is quite 
 python coaster.py [input-file] --ifd_heuristic
 ```
 
+#### (in progress) FD heuristic mode
+
+Coaster can also be run in FD heuristic mode, which finds solutions by first
+removing any bridge edges and then using a reduction to a flow network.
+
+```
+python coaster.py [input-file] --fd_heuristic
+```
+
 ### Testing
 
 The directory `big_sc_test` contains 5,291 graphs with 2 subpath constraints

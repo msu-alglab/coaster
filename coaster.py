@@ -149,6 +149,39 @@ def find_ifd_heuristic_sol(graph, maxtime,):
         return set(), 0
 
 
+def find_fd_heuristic_sol(graph, maxtime,):
+    """
+    Find a flow decomposition for instance.
+
+    This is the main function for running the FD heuristic version of Coaster.
+    """
+
+    if maxtime is None:
+        maxtime = -1
+    print("Searching for FD heuristic solution. Timeout set at {}"
+          "".format(maxtime))
+    try:
+        with timeout(seconds=maxtime):
+            # ifd_instance = ifd.InexactFlowInstance(
+            #     graph.get_mifd_reduction())
+            # ifd_instance.solve()
+            # ifd_instance.graph.convert_paths()
+            # paths = ifd_instance.graph.get_converted_paths()
+            # weights = ifd_instance.graph.get_weights()
+            elapsed = time.time() - start
+            print("\n# Solution time was {:.2f} seconds".format(elapsed))
+            # return (paths, weights), elapsed
+            return set(), elapsed
+    except TimeoutError:
+        print("Timed out after {} seconds".format(maxtime))
+        return set(), maxtime
+    # catching this type error exception was for ANNs, but we may need some
+    # sort of similar thing so keeping the code here in case
+    # except TypeError:
+        # print("TypeError in graph")
+        # return set(), 0
+
+
 if __name__ == "__main__":
     """
         Main script
@@ -180,6 +213,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_k", help="Largest k to consider for any graph",
                         type=int)
     parser.add_argument('--ifd_heuristic', default=False, action='store_true')
+    parser.add_argument('--fd_heuristic', default=False, action='store_true')
 
     args = parser.parse_args()
 
@@ -304,6 +338,8 @@ if __name__ == "__main__":
         else:
             if args.ifd_heuristic:
                 solution, time_weights = find_ifd_heuristic_sol(graph, maxtime)
+            elif args.fd_heuristic:
+                solution, time_weights = find_fd_heuristic_sol(graph, maxtime)
             else:
                 k_start = 1
                 instance = Instance(scc_reduced, k_start, reduced, sccs)
