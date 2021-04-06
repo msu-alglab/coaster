@@ -234,6 +234,7 @@ class AdjList:
                 self.adj_list[u].append((w, flow - weight))
                 self.inverse_adj_list[v].remove((u, flow))
                 self.inverse_adj_list[v].append((u, flow - weight))
+                self.arc_info[self.arc_id(u, v)]["weight"] -= weight
                 break
 
     def copy(self):
@@ -247,6 +248,7 @@ class AdjList:
         res.subpath_constraints = copy.deepcopy(self.subpath_constraints)
         res.subpath_demands = copy.deepcopy(self.subpath_demands)
         res.vertices = set(self.vertices)
+        res.max_arc_label = self.max_arc_label
         return res
 
     def edges(self):
