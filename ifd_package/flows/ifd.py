@@ -61,6 +61,8 @@ class InexactFlowInstance():
             print("\nFinished rebalancing/splicing.")
             self.graph.print_paths()
 
+            """
+
             print("\nStarting pairwise rebalancing.")
             start_time = time.time()
             self.graph.pairwise_rebalance()
@@ -78,6 +80,8 @@ class InexactFlowInstance():
                                         pairwise_splicing_time))
             print("\nFinished pairwise splicing.")
             self.graph.print_paths()
+
+            """
 
             # get metrics
             found_k = self.graph.get_k()

@@ -19,6 +19,7 @@ from coaster.guess_weight import solve
 from coaster.parser import read_instances
 from coaster.flow import Instance
 from coaster.graphs import test_flow_cover
+sys.setrecursionlimit(2000)
 
 
 # Override error message to show help message instead
@@ -233,7 +234,6 @@ if __name__ == "__main__":
     # Iterate over every graph-instance inside the input file
     for graphdata, k, index in read_instances(graph_file, truth_file):
         graph, graphname, graphnumber = graphdata
-        graph.check_flow()
 
         if args.create_graph_pics:
             graph.show("graph_pics/graph{}.pdf".format(graphnumber))
@@ -262,6 +262,7 @@ if __name__ == "__main__":
             print("Original graph is:")
             graph.print_out()
         graph.write_graphviz("original_graph.dot")
+        graph.check_flow()
         start = time.time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()

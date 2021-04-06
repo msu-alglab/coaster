@@ -175,7 +175,8 @@ class IfdAdjList:
                 if (node1, node2) in self.mapping:
                     sc = self.mapping[(node1, node2)]
                     print("uses sc edge for {}".format(sc))
-                    print("should add {}, but also need to check for overlaps".format(sc[1:-1]))
+                    print("should add {}, but also need to check for overlaps".
+                          format(sc[1:-1]))
                     if sc[1] in this_path:
                         # we have an overlap
                         start = len(this_path) - this_path.index(sc[1])
