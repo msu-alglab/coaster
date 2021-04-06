@@ -19,6 +19,7 @@ from coaster.guess_weight import solve
 from coaster.parser import read_instances
 from coaster.flow import Instance
 from coaster.graphs import test_flow_cover
+import coaster.fd as fd
 sys.setrecursionlimit(2000)
 
 
@@ -162,6 +163,7 @@ def find_fd_heuristic_sol(graph, maxtime,):
           "".format(maxtime))
     try:
         with timeout(seconds=maxtime):
+            fd_instance = fd.ExactFlowInstance(graph)
             # ifd_instance = ifd.InexactFlowInstance(
             #     graph.get_mifd_reduction())
             # ifd_instance.solve()
