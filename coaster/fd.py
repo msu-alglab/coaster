@@ -22,7 +22,6 @@ class ExactFlowInstance:
                          self.graph.subpath_demands):
             for u, v in zip(sc, sc[1:]):
                 demands[(u, v)] += d
-        print("demands is", demands)
         for arc_id in self.graph.adj_list:
             u = self.graph.arc_info[arc_id]["start"]
             v = self.graph.arc_info[arc_id]["destin"]
@@ -35,13 +34,10 @@ class ExactFlowInstance:
         Convert each subpath constraint into a bridge edge, and subtract its
         demand from the flow on the edges it covers
         """
-        print(self.reduced_graph.adj_list)
         self.corresponding_edges = defaultdict(list)
         for sc_nodes, d in zip(self.graph.subpath_constraints,
                                self.graph.subpath_demands):
             sc = self.reduced_graph.convert_nodeseq_to_arcs(sc_nodes)
-            print("reducing based on sc (nodes)", sc_nodes)
-            print("arc id based:", sc)
             start = self.reduced_graph.arc_info[sc[0]]["start"]
             end = self.reduced_graph.arc_info[sc[-1]]["destin"]
             new_arc_id = self.reduced_graph.add_edge(start, end, d)

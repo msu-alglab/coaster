@@ -170,10 +170,6 @@ def find_fd_heuristic_sol(graph, maxtime,):
             weights = fd_instance.weights
             elapsed = time.time() - start
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
-            print("paths are:")
-            print(paths)
-            print("weights are")
-            print(weights)
             return (paths, weights), elapsed
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
