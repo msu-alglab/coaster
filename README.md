@@ -3,7 +3,7 @@
 * Python 3
 * numpy
 * scipy
-* ortools (needed for finding mincost flow in the inexact flow decomposition
+* [ortools](https://developers.google.com/optimization) (needed for finding mincost flow in the inexact flow decomposition
     heuristic)
 
 ### Running Coaster
