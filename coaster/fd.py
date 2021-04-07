@@ -63,22 +63,20 @@ class ExactFlowInstance:
         self.reduced_graph.run_greedy_width()
 
     def convert_paths(self):
-        """After a path solution has been found to the reduced graph, convert
-        it back to a path solution in the original graph."""
+        """
+        After a path solution has been found to the reduced graph, convert
+        it back to a path solution in the original graph.
+        If there are mutiple copies of the same path (follow the same sequence
+        of nodes), combine into one.
+        """
         self.paths = []
         self.weights = self.reduced_graph.weights
-        print("paths are", self.reduced_graph.paths)
-        print("corresponding edges is", self.corresponding_edges)
         for path in self.reduced_graph.paths:
             new_path = []
-            print("processing path", path)
             for arc_id in path:
-                print("arc_id is", arc_id)
                 if arc_id in self.corresponding_edges:
-                    print("is a sc")
                     new_path += self.corresponding_edges[arc_id]
                 else:
-                    print("not an sc")
                     # if this is the first arc_id we are adding, add both first
                     # and last node
                     if len(new_path) == 0:
@@ -86,6 +84,11 @@ class ExactFlowInstance:
                             [self.reduced_graph.arc_info[arc_id]["start"]]
                     new_path += [self.reduced_graph.arc_info[arc_id]["destin"]]
 
-                print("new path is", new_path)
             self.paths.append(new_path)
-            print(self.paths)
+        # combine paths if same
+        path_to_weight = defaultdict(int)
+        for path, weight in zip(self.paths, self.weights):
+            path_to_weight[tuple(path)] += weight
+        self.paths = [list(x) for x in list(path_to_weight.keys())]
+        self.weights = list(path_to_weight.values())
+
