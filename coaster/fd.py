@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import combinations
 
 
 class ExactFlowInstance:
@@ -81,10 +82,62 @@ class ExactFlowInstance:
                     new_path += [self.reduced_graph.arc_info[arc_id]["destin"]]
 
             self.paths.append(new_path)
-        # combine paths if same
+        self.dedupe_paths()
+
+    def dedupe_paths(self):
+        """Combine paths if same."""
         path_to_weight = defaultdict(int)
         for path, weight in zip(self.paths, self.weights):
             path_to_weight[tuple(path)] += weight
         self.paths = [list(x) for x in list(path_to_weight.keys())]
         self.weights = list(path_to_weight.values())
 
+    def splice(self):
+        """
+        After we have converted paths back into the orignal graph, look for
+        opportunities to splice pairs of weight 1 paths so that they match a
+        non weight 1 path.
+        """
+        weight_1_path_indices = [i for i, x in
+                                 enumerate(self.weights) if x == 1]
+        for pair in combinations(weight_1_path_indices, 2):
+            a = self.paths[pair[0]]
+            b = self.paths[pair[1]]
+            for c in [x for i, x in enumerate(self.paths) if i not in
+                      weight_1_path_indices]:
+                # if a and b can be spliced to make c, do it
+                prefix = lcp(a, c)
+                suffix = lcs(c, b)
+                print("longest common prefix is", prefix)
+                print("longest common suffix is", suffix)
+                if len(prefix) + len(suffix) >= len(c):
+                    print("possible to splice")
+                    # make prefix the start of the new first path
+                    # assume paths are simple, so can just pick up other path
+                    # starting after last node of prefix
+                    self.paths[pair[0]] = prefix + b[b.index(prefix[-1]) + 1:]
+                    self.paths[pair[1]] = b[:b.index(prefix[-1]) + 1] +\
+                        a[a.index(prefix[-1]) + 1:]
+                    k = len(self.paths)
+                    self.dedupe_paths()
+                    print("Reduced number of paths by", k - len(self.paths))
+                break
+
+
+def lcp(s1, s2):
+    index = 0
+    ch1 = s1[index]
+    ch2 = s2[index]
+    while ch1 == ch2 and index < len(s1) and index <= len(s2):
+        index += 1
+        ch1 = s1[index]
+        ch2 = s2[index]
+    return s1[:index]
+
+
+def lcs(s1, s2):
+    s1 = list(reversed(s1))
+    s2 = list(reversed(s2))
+    rev_prefix = lcp(s1, s2)
+    rev_prefix.reverse()
+    return rev_prefix

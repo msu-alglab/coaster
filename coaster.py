@@ -13,6 +13,7 @@ import signal
 # local imports
 import ifd_package.flows.ifd as ifd
 from os import path
+from pathlib import Path
 from os import mkdir
 import sys
 from coaster.guess_weight import solve
@@ -166,6 +167,7 @@ def find_fd_heuristic_sol(graph, maxtime,):
             fd_instance = fd.ExactFlowInstance(graph)
             fd_instance.solve()
             fd_instance.convert_paths()
+            fd_instance.splice()
             paths = fd_instance.paths
             weights = fd_instance.weights
             elapsed = time.time() - start
@@ -226,6 +228,15 @@ if __name__ == "__main__":
     stats_out.write("filename,graphname,n,m,contracted_n,contracted_m," +
                     "scc_n,scc_m,num_cycles,size_of_cycles...,routings_" +
                     "over_cycle...,\n")
+    # assume that file structure is some_dir/experiment_info/truth/truthfile,
+    # some_dir/experiment_info/graphs/graphfiles, and we want to put the
+    pred_path_filename = Path(graph_file).parents[1] / "predicted" / "pred.txt"
+    try:
+        pred_path_filename.parents[0].mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        pass
+
+    output = open(pred_path_filename, "w")
 
     maxtime = args.timeout
     if maxtime:
@@ -368,6 +379,11 @@ if __name__ == "__main__":
                 test_flow_cover(graph, paths, weights)
                 print("# Paths, weights pass test: flow decomposition"
                       " confirmed.")
+                output.write("# graph number = {} name = {}\n".
+                             format(graphnumber, graphname))
+                for p, weight in zip(paths, weights):
+                    output.write(" ".join([str(x) for x in [weight] + p]) +
+                                 "\n")
 
         # print experimental statistics
         if args.experiment_info:
@@ -381,3 +397,4 @@ if __name__ == "__main__":
         stats_out.write("\n")
         print("Finished instance.\n")
     stats_out.close()
+    output.close()
