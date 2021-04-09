@@ -1,5 +1,6 @@
 from collections import defaultdict
 from itertools import combinations
+from coaster.graphs import test_flow_cover
 
 
 class ExactFlowInstance:
@@ -103,25 +104,51 @@ class ExactFlowInstance:
         for pair in combinations(weight_1_path_indices, 2):
             a = self.paths[pair[0]]
             b = self.paths[pair[1]]
+            print("a=", a)
+            print("b=", b)
+            spliced = False
             for c in [x for i, x in enumerate(self.paths) if i not in
                       weight_1_path_indices]:
                 # if a and b can be spliced to make c, do it
+                print("c=", c)
                 prefix = lcp(a, c)
                 suffix = lcs(c, b)
                 print("longest common prefix is", prefix)
                 print("longest common suffix is", suffix)
                 if len(prefix) + len(suffix) >= len(c):
-                    print("possible to splice")
                     # make prefix the start of the new first path
                     # assume paths are simple, so can just pick up other path
                     # starting after last node of prefix
-                    self.paths[pair[0]] = prefix + b[b.index(prefix[-1]) + 1:]
-                    self.paths[pair[1]] = b[:b.index(prefix[-1]) + 1] +\
-                        a[a.index(prefix[-1]) + 1:]
-                    k = len(self.paths)
-                    self.dedupe_paths()
-                    print("Reduced number of paths by", k - len(self.paths))
+                    node = get_splice_node_a(prefix, b)
+                    print(node)
+                    self.paths[pair[0]] = prefix[:prefix.index(node) + 1] +\
+                        b[b.index(node) + 1:]
+                    self.paths[pair[1]] = b[:b.index(node) + 1] +\
+                        a[a.index(node) + 1:]
+                    try:
+                        test_flow_cover(self.graph, self.paths, self.weights)
+                    except AssertionError:
+                        self.paths[pair[0]] = a
+                        self.paths[pair[1]] = b
+                    else:
+                        print("reassigned paths. new paths are:")
+                        print(self.paths[pair[0]])
+                        print(self.paths[pair[1]])
+                        spliced = True
+                if spliced:
+                    break
+            if spliced:
+                k = len(self.paths)
+                self.dedupe_paths()
+                print("Reduced number of paths by", k - len(self.paths))
                 break
+
+
+def get_splice_node_a(prefix, b):
+    index = 1
+    while prefix[-index] not in b:
+        index += 1
+    return prefix[-index]
 
 
 def lcp(s1, s2):
