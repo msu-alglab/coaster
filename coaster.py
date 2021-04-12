@@ -167,7 +167,7 @@ def find_fd_heuristic_sol(graph, maxtime,):
             fd_instance = fd.ExactFlowInstance(graph)
             fd_instance.solve()
             fd_instance.convert_paths()
-            fd_instance.splice()
+            fd_instance.splice_heuristic()
             paths = fd_instance.paths
             weights = fd_instance.weights
             elapsed = time.time() - start

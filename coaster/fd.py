@@ -93,55 +93,71 @@ class ExactFlowInstance:
         self.paths = [list(x) for x in list(path_to_weight.keys())]
         self.weights = list(path_to_weight.values())
 
-    def splice(self):
+    def splice_heuristic(self):
         """
         After we have converted paths back into the orignal graph, look for
         opportunities to splice pairs of weight 1 paths so that they match a
         non weight 1 path.
         """
-        weight_1_path_indices = [i for i, x in
-                                 enumerate(self.weights) if x == 1]
-        for pair in combinations(weight_1_path_indices, 2):
-            a = self.paths[pair[0]]
-            b = self.paths[pair[1]]
-            print("a=", a)
-            print("b=", b)
+        k = len(self.paths)
+        print("initial length of paths is", k)
+        spliced = True
+        while spliced:
             spliced = False
-            for c in [x for i, x in enumerate(self.paths) if i not in
-                      weight_1_path_indices]:
-                # if a and b can be spliced to make c, do it
-                print("c=", c)
-                prefix = lcp(a, c)
-                suffix = lcs(c, b)
-                print("longest common prefix is", prefix)
-                print("longest common suffix is", suffix)
-                if len(prefix) + len(suffix) >= len(c):
-                    # make prefix the start of the new first path
-                    # assume paths are simple, so can just pick up other path
-                    # starting after last node of prefix
-                    node = get_splice_node_a(prefix, b)
-                    print(node)
-                    self.paths[pair[0]] = prefix[:prefix.index(node) + 1] +\
-                        b[b.index(node) + 1:]
-                    self.paths[pair[1]] = b[:b.index(node) + 1] +\
-                        a[a.index(node) + 1:]
-                    try:
-                        test_flow_cover(self.graph, self.paths, self.weights)
-                    except AssertionError:
-                        self.paths[pair[0]] = a
-                        self.paths[pair[1]] = b
-                    else:
-                        print("reassigned paths. new paths are:")
-                        print(self.paths[pair[0]])
-                        print(self.paths[pair[1]])
-                        spliced = True
+            weight_1_path_indices = [i for i, x in
+                                     enumerate(self.weights) if x == 1]
+            for pair in combinations(weight_1_path_indices, 2):
+                a = self.paths[pair[0]]
+                b = self.paths[pair[1]]
+                print("a=", a)
+                print("b=", b)
+                for c in [x for i, x in enumerate(self.paths) if i not in
+                          pair]:
+                    # if a and b can be spliced to make c, do it
+                    spliced = self.splice(a, b, c, pair)
+                    if spliced:
+                        break
                 if spliced:
+                    old_k = len(self.paths)
+                    self.dedupe_paths()
+                    print("spliced")
+                    print("len of paths is", len(self.paths))
+                    # the following is for when a, b follow the same path at
+                    # end
+                    if old_k == len(self.paths):
+                        spliced = False
                     break
-            if spliced:
-                k = len(self.paths)
-                self.dedupe_paths()
-                print("Reduced number of paths by", k - len(self.paths))
-                break
+        print("Reduced number of paths by", k - len(self.paths))
+
+    def splice(self, a, b, c, pair):
+        """Check whether a and b can be spliced to make c, and if so, do it."""
+        spliced = False
+        print("c=", c)
+        prefix = lcp(a, c)
+        suffix = lcs(c, b)
+        print("longest common prefix is", prefix)
+        print("longest common suffix is", suffix)
+        if len(prefix) + len(suffix) >= len(c):
+            # make prefix the start of the new first path
+            # assume paths are simple, so can just pick up other path
+            # starting after last node of prefix
+            node = get_splice_node_a(prefix, b)
+            # print(node)
+            self.paths[pair[0]] = prefix[:prefix.index(node) + 1] +\
+                b[b.index(node) + 1:]
+            self.paths[pair[1]] = b[:b.index(node) + 1] +\
+                a[a.index(node) + 1:]
+            try:
+                test_flow_cover(self.graph, self.paths, self.weights)
+            except AssertionError:
+                self.paths[pair[0]] = a
+                self.paths[pair[1]] = b
+            else:
+                print("reassigned paths. new paths are:")
+                print(self.paths[pair[0]])
+                print(self.paths[pair[1]])
+                spliced = True
+        return spliced
 
 
 def get_splice_node_a(prefix, b):
