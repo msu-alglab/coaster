@@ -101,6 +101,9 @@ class ExactFlowInstance:
         """
         k = len(self.paths)
         print("initial length of paths is", k)
+        print("Initial paths are:")
+        for x in self.paths:
+            print(x)
         spliced = True
         while spliced:
             spliced = False
@@ -118,35 +121,36 @@ class ExactFlowInstance:
                     if spliced:
                         break
                 if spliced:
-                    old_k = len(self.paths)
                     self.dedupe_paths()
                     print("spliced")
                     print("len of paths is", len(self.paths))
-                    # the following is for when a, b follow the same path at
-                    # end
-                    if old_k == len(self.paths):
-                        spliced = False
                     break
         print("Reduced number of paths by", k - len(self.paths))
 
     def splice(self, a, b, c, pair):
         """Check whether a and b can be spliced to make c, and if so, do it."""
+        # convert a, b, and c to arc id sequences.
+        a_arc = self.graph.convert_nodeseq_to_arcs(a)
+        b_arc = self.graph.convert_nodeseq_to_arcs(b)
+        c_arc = self.graph.convert_nodeseq_to_arcs(c)
+        print("a_arc=", a_arc)
+        print("b_arc=", b_arc)
+        print("c_arc=", c_arc)
         spliced = False
-        print("c=", c)
-        prefix = lcp(a, c)
-        suffix = lcs(c, b)
+        prefix = lcp(a_arc, c_arc)
+        suffix = lcs(c_arc, b_arc)
         print("longest common prefix is", prefix)
         print("longest common suffix is", suffix)
         if len(prefix) + len(suffix) >= len(c):
-            # make prefix the start of the new first path
-            # assume paths are simple, so can just pick up other path
-            # starting after last node of prefix
-            node = get_splice_node_a(prefix, b)
-            # print(node)
-            self.paths[pair[0]] = prefix[:prefix.index(node) + 1] +\
-                b[b.index(node) + 1:]
-            self.paths[pair[1]] = b[:b.index(node) + 1] +\
-                a[a.index(node) + 1:]
+            # make the start of the new first path and suffix the end
+            num_edges_from_b = len(c_arc) - len(prefix)
+            a_prime = prefix + b_arc[-num_edges_from_b:]
+            b_prime = b_arc[:len(b_arc) - num_edges_from_b] +\
+                a_arc[len(prefix):]
+            print("a':", a_prime)
+            print("b':", b_prime)
+            self.paths[pair[0]] = self.graph.convert_arcseq_to_nodes(a_prime)
+            self.paths[pair[1]] = self.graph.convert_arcseq_to_nodes(b_prime)
             try:
                 test_flow_cover(self.graph, self.paths, self.weights)
             except AssertionError:
@@ -156,15 +160,9 @@ class ExactFlowInstance:
                 print("reassigned paths. new paths are:")
                 print(self.paths[pair[0]])
                 print(self.paths[pair[1]])
+                assert self.paths[pair[0]] == c
                 spliced = True
         return spliced
-
-
-def get_splice_node_a(prefix, b):
-    index = 1
-    while prefix[-index] not in b:
-        index += 1
-    return prefix[-index]
 
 
 def lcp(s1, s2):
