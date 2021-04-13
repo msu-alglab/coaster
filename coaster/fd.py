@@ -31,6 +31,11 @@ class ExactFlowInstance:
             if demands[(u, v)] > f:
                 self.overdemands[(u, v)] = demands[(u, v)] - f
 
+    def get_arc_from_sc(self, sc):
+        for (key, value) in self.corresponding_edges.items():
+            if value == sc:
+                return key
+
     def create_reduced_graph(self):
         """
         Convert each subpath constraint into a bridge edge, and subtract its
@@ -49,7 +54,6 @@ class ExactFlowInstance:
         self.reduced_graph.subpath_constraints = []
         self.reduced_graph.subpath_demands = []
         self.reduced_graph.check_flow()
-        self.reduced_graph.write_graphviz("fd_reduced.dot")
 
     def solve(self):
         """
@@ -58,7 +62,34 @@ class ExactFlowInstance:
         Step 3: find a path solution.
         """
         self.create_reduced_graph()
+        # self.increase_bridge_flows()
         self.reduced_graph.run_greedy_width()
+
+    def increase_bridge_flows(self):
+        """
+        In order to create better path decompositions, try to route as much
+        flow as possible on bridge edges.
+        """
+        print("\nIncreasing bridge flows.")
+        for sc in self.graph.subpath_constraints:
+            print("sc is", sc)
+            arcs = self.graph.convert_nodeseq_to_arcs(sc)
+            # see if we can increase the bridge edge
+            min_f = self.reduced_graph.arc_info[arcs[0]]["weight"]
+            print("min_f for this sc is", min_f)
+            for arc in arcs:
+                min_f = min(self.reduced_graph.arc_info[arc]["weight"], min_f)
+                print("arc from", self.reduced_graph.arc_info[arc]["start"],
+                      "to",
+                      self.reduced_graph.arc_info[arc]["destin"], "has weight",
+                      self.reduced_graph.arc_info[arc]["weight"])
+            # change bridge edge flow and arc flows
+            sc_arc = self.get_arc_from_sc(sc)
+            self.reduced_graph.remove_weight_by_arc_id(-min_f, sc_arc)
+            for arc in arcs:
+                self.reduced_graph.remove_weight_by_arc_id(min_f, arc)
+            self.reduced_graph.check_flow()
+        self.reduced_graph.write_graphviz("fd_reduced.dot")
 
     def convert_paths(self):
         """
@@ -107,24 +138,23 @@ class ExactFlowInstance:
         spliced = True
         while spliced:
             spliced = False
-            weight_1_path_indices = [i for i, x in
-                                     enumerate(self.weights) if x == 1]
-            for pair in combinations(weight_1_path_indices, 2):
-                a = self.paths[pair[0]]
-                b = self.paths[pair[1]]
-                print("a=", a)
-                print("b=", b)
-                for c in [x for i, x in enumerate(self.paths) if i not in
-                          pair]:
-                    # if a and b can be spliced to make c, do it
-                    spliced = self.splice(a, b, c, pair)
+            for pair in combinations([i for i, x in enumerate(self.paths)], 2):
+                if self.weights[pair[0]] == self.weights[pair[1]]:
+                    a = self.paths[pair[0]]
+                    b = self.paths[pair[1]]
+                    print("a=", a)
+                    print("b=", b)
+                    for c in [x for i, x in enumerate(self.paths) if i not in
+                              pair]:
+                        # if a and b can be spliced to make c, do it
+                        spliced = self.splice(a, b, c, pair)
+                        if spliced:
+                            break
                     if spliced:
+                        self.dedupe_paths()
+                        print("spliced")
+                        print("len of paths is", len(self.paths))
                         break
-                if spliced:
-                    self.dedupe_paths()
-                    print("spliced")
-                    print("len of paths is", len(self.paths))
-                    break
         print("Reduced number of paths by", k - len(self.paths))
 
     def splice(self, a, b, c, pair):
