@@ -44,18 +44,30 @@ class timeout:
     def __init__(self, seconds=1, error_message='Timeout'):
         self.seconds = seconds
         self.error_message = error_message
+        self.start_pro_time = time.process_time()
 
     def handle_timeout(self, signum, frame):
+        print("cpu time is", time.process_time() - self.start_pro_time)
         raise TimeoutError(self.error_message)
+
+    def handle_alarm(self, signum, frame):
+        cpu_time = time.process_time() - self.start_pro_time
+        if cpu_time > self.seconds:
+            raise TimeoutError(self.error_message)
+        else:
+            signal.signal(signal.SIGALRM, self.handle_alarm)
+            signal.alarm(1)
 
     def __enter__(self):
         if self.seconds > 0:
-            signal.signal(signal.SIGALRM, self.handle_timeout)
-            signal.alarm(self.seconds)
+            # signal.signal(signal.SIGALRM, self.handle_timeout)
+            signal.signal(signal.SIGALRM, self.handle_alarm)
+            signal.alarm(1)
 
     def __exit__(self, type, value, traceback):
         if self.seconds > 0:
             signal.alarm(0)
+        print("cpu time was", time.process_time() - self.start_pro_time)
 
 
 def index_range(raw):
@@ -238,7 +250,7 @@ if __name__ == "__main__":
     else:
         exp_type = "fpt"
     pred_path_filename = Path(graph_file).parents[1] / ("predicted_" +
-exp_type) / "pred.txt"
+                                                        exp_type) / "pred.txt"
     try:
         pred_path_filename.parents[0].mkdir(parents=True, exist_ok=False)
     except FileExistsError:
