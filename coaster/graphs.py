@@ -246,13 +246,13 @@ class AdjList:
         old_weight = self.arc_info[arc_id]["weight"]
         u = self.arc_info[arc_id]["start"]
         v = self.arc_info[arc_id]["destin"]
+        self.arc_info[arc_id]["weight"] -= weight
         for (w, flow) in self.adj_list[u]:
             if w == v and flow == old_weight:
                 self.adj_list[u].remove((w, flow))
                 self.adj_list[u].append((w, flow - weight))
                 self.inverse_adj_list[v].remove((u, flow))
                 self.inverse_adj_list[v].append((u, flow - weight))
-                self.arc_info[arc_id]["weight"] = flow - weight
                 break
 
     def copy(self):
