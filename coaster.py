@@ -229,8 +229,16 @@ if __name__ == "__main__":
                     "scc_n,scc_m,num_cycles,size_of_cycles...,routings_" +
                     "over_cycle...,\n")
     # assume that file structure is some_dir/experiment_info/truth/truthfile,
-    # some_dir/experiment_info/graphs/graphfiles, and we want to put the
-    pred_path_filename = Path(graph_file).parents[1] / "predicted" / "pred.txt"
+    # some_dir/experiment_info/graphs/graphfiles, and we want to put the output
+    # in some_dir/experiment_info/predicted_exp_type/pred.txt
+    if args.fd_heuristic:
+        exp_type = "fd_heur"
+    elif args.ifd_heuristic:
+        exp_type = "ifd_heur"
+    else:
+        exp_type = "fpt"
+    pred_path_filename = Path(graph_file).parents[1] / ("predicted_" +
+exp_type) / "pred.txt"
     try:
         pred_path_filename.parents[0].mkdir(parents=True, exist_ok=False)
     except FileExistsError:
