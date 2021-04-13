@@ -129,28 +129,19 @@ class ExactFlowInstance:
 
     def splice(self, a, b, c, pair):
         """Check whether a and b can be spliced to make c, and if so, do it."""
-        # convert a, b, and c to arc id sequences.
-        a_arc = self.graph.convert_nodeseq_to_arcs(a)
-        b_arc = self.graph.convert_nodeseq_to_arcs(b)
-        c_arc = self.graph.convert_nodeseq_to_arcs(c)
-        print("a_arc=", a_arc)
-        print("b_arc=", b_arc)
-        print("c_arc=", c_arc)
         spliced = False
-        prefix = lcp(a_arc, c_arc)
-        suffix = lcs(c_arc, b_arc)
-        print("longest common prefix is", prefix)
-        print("longest common suffix is", suffix)
-        if len(prefix) + len(suffix) >= len(c):
+        prefix = lcp(a, c)
+        suffix = lcs(c, b)
+        if len(prefix) + len(suffix) >= len(c) + 1:
             # make the start of the new first path and suffix the end
-            num_edges_from_b = len(c_arc) - len(prefix)
-            a_prime = prefix + b_arc[-num_edges_from_b:]
-            b_prime = b_arc[:len(b_arc) - num_edges_from_b] +\
-                a_arc[len(prefix):]
+            num_nodes_from_b = len(c) - len(prefix)
+            a_prime = prefix + b[-num_nodes_from_b:]
+            b_prime = b[:len(b) - num_nodes_from_b] +\
+                a[len(prefix):]
             print("a':", a_prime)
             print("b':", b_prime)
-            self.paths[pair[0]] = self.graph.convert_arcseq_to_nodes(a_prime)
-            self.paths[pair[1]] = self.graph.convert_arcseq_to_nodes(b_prime)
+            self.paths[pair[0]] = a_prime
+            self.paths[pair[1]] = b_prime
             try:
                 test_flow_cover(self.graph, self.paths, self.weights)
             except AssertionError:
