@@ -256,7 +256,7 @@ if __name__ == "__main__":
     except FileExistsError:
         pass
 
-    output = open(pred_path_filename, "w")
+    output = open(pred_path_filename, "a")
 
     maxtime = args.timeout
     if maxtime:
