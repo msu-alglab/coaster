@@ -232,6 +232,8 @@ if __name__ == "__main__":
 
     graph_file = args.file
     filename = path.basename(graph_file)
+    filenum = graph_file.split(".graph")[0].split("graphs/sc")[1]
+    print("filenum is", filenum)
     truth_file = "{}.truth".format(path.splitext(graph_file)[0])
     stats_file = "stats_files/" + graph_file.split("/")[-1] + "_stats.txt"
     if not path.isdir("stats_files"):
@@ -249,14 +251,14 @@ if __name__ == "__main__":
         exp_type = "ifd_heur"
     else:
         exp_type = "fpt"
-    pred_path_filename = Path(graph_file).parents[1] / ("predicted_" +
-                                                        exp_type) / "pred.txt"
+    pred_path_filename = Path(graph_file).parents[1] /\
+ ("predicted_" + exp_type) / ("pred" + filenum + ".txt")
     try:
         pred_path_filename.parents[0].mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         pass
 
-    output = open(pred_path_filename, "a")
+    output = open(pred_path_filename, "w")
 
     maxtime = args.timeout
     if maxtime:
