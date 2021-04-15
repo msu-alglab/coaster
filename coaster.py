@@ -179,7 +179,7 @@ def find_fd_heuristic_sol(graph, maxtime,):
             fd_instance = fd.ExactFlowInstance(graph)
             fd_instance.solve()
             fd_instance.convert_paths()
-            fd_instance.splice_heuristic()
+            # fd_instance.splice_heuristic()
             paths = fd_instance.paths
             weights = fd_instance.weights
             elapsed = time.time() - start
@@ -199,6 +199,10 @@ if __name__ == "__main__":
     """
         Main script
     """
+    # start overall timer
+    overall_start_cpu = time.process_time()
+    overall_start_wallclock = time.perf_counter()
+
     # parse arguments
     readme_filename = path.join(path.dirname(__file__), 'readme_short.txt')
     with open(readme_filename, 'r') as desc:
@@ -420,3 +424,8 @@ if __name__ == "__main__":
         print("Finished instance.\n")
     stats_out.close()
     output.close()
+    # report overall times
+    print("Overall cpu time: {:2f} seconds".format(time.process_time() -
+overall_start_cpu))
+    print("Overall wall clock time: {:2f} seconds".format(time.perf_counter() -
+overall_start_wallclock))
