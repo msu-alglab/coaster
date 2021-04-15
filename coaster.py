@@ -122,8 +122,9 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
                     break
                 instance.try_larger_k()
             elapsed = time.time() - start
+            cpu_elapsed = time.process_time() - start_cpu
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
-            return solution, elapsed
+            return solution, cpu_elapsed
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
         return set(), maxtime
@@ -153,8 +154,9 @@ def find_ifd_heuristic_sol(graph, maxtime,):
             paths = ifd_instance.graph.get_converted_paths()
             weights = ifd_instance.graph.get_weights()
             elapsed = time.time() - start
+            cpu_elapsed = time.process_time() - start_cpu
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
-            return (paths, weights), elapsed
+            return (paths, weights), cpu_elapsed
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
         return set(), maxtime
@@ -183,8 +185,9 @@ def find_fd_heuristic_sol(graph, maxtime,):
             paths = fd_instance.paths
             weights = fd_instance.weights
             elapsed = time.time() - start
+            cpu_elapsed = time.process_time() - start_cpu
             print("\n# Solution time was {:.2f} seconds".format(elapsed))
-            return (paths, weights), elapsed
+            return (paths, weights), cpu_elapsed
     except TimeoutError:
         print("Timed out after {} seconds".format(maxtime))
         return set(), maxtime
@@ -261,8 +264,16 @@ if __name__ == "__main__":
         pred_path_filename.parents[0].mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         pass
+    # make a runtime output filename as well
+    runtime_filename = Path(graph_file).parents[1] /\
+ ("runtimes_" + exp_type) / ("runtimes" + filenum + ".txt")
+    try:
+        runtime_filename.parents[0].mkdir(parents=True, exist_ok=False)
+    except FileExistsError:
+        pass
 
     output = open(pred_path_filename, "w")
+    runtime_output = open(runtime_filename, "w")
 
     maxtime = args.timeout
     if maxtime:
@@ -334,6 +345,7 @@ if __name__ == "__main__":
         graph.write_graphviz("original_graph.dot")
         graph.check_flow()
         start = time.time()
+        start_cpu = time.process_time()
         # contract in-/out-degree 1 vertices
         reduced, mapping = graph.contracted()
         # reduced is the graph after contractions;
@@ -407,6 +419,7 @@ if __name__ == "__main__":
                       " confirmed.")
                 output.write("# graph number = {} name = {}\n".
                              format(graphnumber, graphname))
+                runtime_output.write("{} {}\n".format(graphname, time_weights))
                 for p, weight in zip(paths, weights):
                     output.write(" ".join([str(x) for x in [weight] + p]) +
                                  "\n")
@@ -424,6 +437,7 @@ if __name__ == "__main__":
         print("Finished instance.\n")
     stats_out.close()
     output.close()
+    runtime_output.close()
     # report overall times
     print("Overall cpu time: {:2f} seconds".format(time.process_time() -
 overall_start_cpu))
