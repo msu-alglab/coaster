@@ -4,7 +4,8 @@
 * numpy
 * scipy
 * [ortools](https://developers.google.com/optimization) (needed for finding mincost flow in the inexact flow decomposition
-    heuristic)
+    heuristic) TODO: remove this, since the IFD reduction is not currently
+	being used.
 
 ### Running Coaster
 
@@ -16,18 +17,7 @@ FPT mode is the default mode for Coaster. It can be run using
 python coaster.py [input-file]
 ```
 
-#### IFD Heuristic mode
-
-Coaster can be run in IFD heuristic mode to find solutions in larger graphs using a reduction to IFD.
-Note that this requires acyclic, non-nested subpath constraints, which is quite limiting.
-
-*TODO: check exactly when heuristic mode works on cyclic graphs.*
-
-```
-python coaster.py [input-file] --ifd_heuristic
-```
-
-#### (in progress) FD heuristic mode
+#### FD heuristic mode
 
 Coaster can also be run in FD heuristic mode, which finds solutions by first
 removing any bridge edges and then using a reduction to a flow network.
@@ -36,18 +26,33 @@ removing any bridge edges and then using a reduction to a flow network.
 python coaster.py [input-file] --fd_heuristic
 ```
 
+#### IFD Heuristic mode (not currently in use)
+
+Coaster can be run in IFD heuristic mode to find solutions in larger graphs using a reduction to IFD.
+Note that this requires acyclic, non-nested subpath constraints, which is quite limiting.
+
+*TODO: check exactly when ifd heuristic mode works on cyclic graphs.*
+
+```
+python coaster.py [input-file] --ifd_heuristic
+```
+
+
 ### Testing
 
-The directory `big_sc_test` contains 5,291 graphs with 2 subpath constraints
-each. Only 52 of them are ANN. But can run
+The directory `acyclic_sc_graph_instances/len4dem1subpaths2/graphs` contains
+1999 graphs with 2 subpath constraints of length 4 (in the contracted graph)
+each. Run
 
 ```
-python coaster.py big_sc_test/sc0.graph --ifd_heuristic
+python coaster.py acyclic_sc_graph_instances/len4dem1subpaths2/graphs/sc0.graph --indices 1
 ```
 
-and see if any errors occur.
+to run the FPT algorithm on the first graph in the file. The predicted paths
+and weights will be placed in the file
+`acyclic_sc_graph_instances/len4dem1subpaths2/predicted_fpt/pred0.txt`.
 
-This data file was created by running the following from the `coaster-experiments`
+The file in `big_sc_test` was created by running the following from the `coaster-experiments`
 repository:
 
 ```
