@@ -1,7 +1,7 @@
 #! /usr/bin/env python3
 #
-# This file is part of Toboggan, https://github.com/TheoryInPractice/Toboggan/,
-# and is Copyright (C) North Carolina State University, 2017. It is licensed
+# This file is part of Coaster, https://github.com/msualglab/Coaster/,
+# and is Copyright (C) Montana State University, 2021. It is licensed
 # under the three-clause BSD license; see LICENSE.
 #
 # -*- coding: utf-8 -*-
@@ -259,14 +259,14 @@ if __name__ == "__main__":
     else:
         exp_type = "fpt"
     pred_path_filename = Path(graph_file).parents[1] /\
- ("predicted_" + exp_type) / ("pred" + filenum + ".txt")
+        ("predicted_" + exp_type) / ("pred" + filenum + ".txt")
     try:
         pred_path_filename.parents[0].mkdir(parents=True, exist_ok=False)
     except FileExistsError:
         pass
     # make a runtime output filename as well
     runtime_filename = Path(graph_file).parents[1] /\
- ("runtimes_" + exp_type) / ("runtimes" + filenum + ".txt")
+        ("runtimes_" + exp_type) / ("runtimes" + filenum + ".txt")
     try:
         runtime_filename.parents[0].mkdir(parents=True, exist_ok=False)
     except FileExistsError:
@@ -439,7 +439,7 @@ if __name__ == "__main__":
     output.close()
     runtime_output.close()
     # report overall times
-    print("Overall cpu time: {:2f} seconds".format(time.process_time() -
-overall_start_cpu))
-    print("Overall wall clock time: {:2f} seconds".format(time.perf_counter() -
-overall_start_wallclock))
+    print("Overall cpu time: {:2f} seconds".format
+          (time.process_time() - overall_start_cpu))
+    print("Overall wall clock time: {:2f} seconds".format
+          (time.perf_counter() - overall_start_wallclock))
