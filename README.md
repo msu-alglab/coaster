@@ -40,9 +40,14 @@ python coaster.py [input-file] --ifd_heuristic
 
 ### Testing
 
-The directory `acyclic_sc_graph_instances/len4dem1subpaths2/graphs` contains
+The file `acyclic_sc_graph_instances/len4dem1subpaths2/graphs/sc0.graph` contains
 1999 graphs with 2 subpath constraints of length 4 (in the contracted graph)
-each. Run
+each. (`len4` meaning "length 4," `dem1` meaning "demand 1," and `subpaths2`
+meaning "2 subpaths.") The file
+`acyclic_sc_graph_instances/len4dem1subpaths2/truth/graphs.truth` contains the corresponding ground truth paths
+and weights.
+
+Run
 
 ```
 python coaster.py acyclic_sc_graph_instances/len4dem1subpaths2/graphs/sc0.graph --indices 1
@@ -51,12 +56,17 @@ python coaster.py acyclic_sc_graph_instances/len4dem1subpaths2/graphs/sc0.graph 
 to run the FPT algorithm on the first graph in the file. The predicted paths
 and weights will be placed in the file
 `acyclic_sc_graph_instances/len4dem1subpaths2/predicted_fpt/pred0.txt`.
+Similarly, run
+```
+python coaster.py acyclic_sc_graph_instances/len4dem1subpaths2/graphs/sc0.graph --indices 1 --fd_heuristic
+```
+to run the same graph using the heuristic.
 
-The file in `big_sc_test` was created by running the following from the `coaster-experiments`
+The file in `acyclic_sc_graph_instances/graphs/` was created by running the following from the `coaster-experiments`
 repository:
 
 ```
-python create_sc_instances.py basic_instances/ acyclic_sc_graph_instances/ acyclic_sc_graph_instances 2 False 2 100000
+python create_sc_instances.py basic_instances/ acyclic_sc_graph_instances/ acyclic_sc_graph_instances 2 False 4 2000
 ```
 
 *TODO: use a testing module*

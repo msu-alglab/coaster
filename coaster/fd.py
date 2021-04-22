@@ -62,7 +62,7 @@ class ExactFlowInstance:
         Step 3: find a path solution.
         """
         self.create_reduced_graph()
-        # self.increase_bridge_flows()
+        self.increase_bridge_flows()
         self.reduced_graph.run_greedy_width()
 
     def increase_bridge_flows(self):
