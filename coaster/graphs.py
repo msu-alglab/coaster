@@ -8,7 +8,6 @@ import time
 import queue
 from collections import defaultdict
 import itertools
-import ifd_package.flows.graphs as ifd_graphs
 
 
 class SimpleGraph:
@@ -816,59 +815,6 @@ class AdjList:
                 if overlap1 == overlap2 and len(overlap2) > 0:
                     overlaps[len(overlap1)] = sc2
         return overlaps[max(overlaps.keys())] if len(overlaps) > 0 else None
-
-    def get_mifd_reduction(self):
-        """
-        Return an inexact flow graph via reduction from a subpath constraint
-        graph.
-        """
-        self.check_ann()  # we require that subpaths ANN
-        ifd_graph = ifd_graphs.IfdAdjList()
-        # add s' with edge to s
-        ifd_graph.add_inexact_edge(max(self.vertices) + 1, self.source(),
-                                   self.flow(), self.flow())
-        print("Added s'->s edge. Current mifd graph:")
-        ifd_graph.print_out()
-        # add all original edges
-        for arc, info in self.arc_info.items():
-            start = info["start"]
-            destin = info["destin"]
-            weight = info["weight"]
-            if arc in self.sc_arcs():
-                # original subpath edge: interval = [0, flow]
-                ifd_graph.add_inexact_edge(start, destin, 0, weight)
-            else:
-                # original non subpath edge: interval = [flow, flow]
-                ifd_graph.add_inexact_edge(start, destin, weight, weight)
-        print("Added original edges. Current mifd graph:")
-        ifd_graph.print_out()
-        # add subpath constraint edges
-        s_prime_id = ifd_graph.source()  # add scs relative to this node id
-        counter = 1
-        for sc, d in zip(self.subpath_constraints, self.subpath_demands):
-            # add three edges: sc start to sc edge, sc edge, and sc edge to sc
-            # end
-            node_id1 = s_prime_id + counter
-            node_id2 = s_prime_id + counter + 1
-            counter += 2
-            ifd_graph.add_inexact_edge(sc[0], node_id1, 0, self.flow())
-            ifd_graph.add_inexact_edge(node_id1, node_id2, d, self.flow())
-            ifd_graph.add_inexact_edge(node_id2, sc[-1], 0, self.flow())
-            ifd_graph.mapping[(node_id1, node_id2)] = sc
-        # add edges for any consecutive subpath constraints
-        for sc in self.subpath_constraints:
-            next_sc = self.find_following_subpath_constraint(sc)
-            print("sc {} overlaps with {}".format(sc, next_sc))
-            if next_sc:
-                # connect sc to next_sc in graph
-                idx1 = s_prime_id + 2*self.subpath_constraints.index(sc) + 2
-                idx2 = s_prime_id +\
-                    2*self.subpath_constraints.index(next_sc) + 1
-                ifd_graph.add_inexact_edge(idx1, idx2, 0, self.flow())
-        print("Added subpath constraint edges. Current mifd graph:")
-        ifd_graph.print_out()
-        ifd_graph.write_graphviz("reduced_graph.dot")
-        return ifd_graph
 
 
 def test_paths(graph, pathset):

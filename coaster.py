@@ -117,7 +117,7 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
                 if max_k:
                     assert instance.k <= max_k
                 print("\n# \tTrying to solve with k = {}".format(instance.k))
-                solution = solve(instance, graph, stats_out, silent=False)
+                solution = solve(instance, graph, stats_out, silent=True)
                 if bool(solution):
                     break
                 instance.try_larger_k()
