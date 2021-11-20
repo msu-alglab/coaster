@@ -61,5 +61,3 @@ python create_sc_instances.py basic_instances/ acyclic_sc_graph_instances/ acycl
 In creating the IFD graph and in converting paths back, we detect prefix/suffix
 overlaps. Both are done in an ugly way, and separately. Can we pull out into a
 nice function?
-
-test
