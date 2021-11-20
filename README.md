@@ -3,9 +3,6 @@
 * Python 3
 * numpy
 * scipy
-* [ortools](https://developers.google.com/optimization) (needed for finding mincost flow in the inexact flow decomposition
-    heuristic) TODO: remove this, since the IFD reduction is not currently
-	being used.
 
 ### Running Coaster
 
@@ -25,18 +22,6 @@ removing any bridge edges and then using a reduction to a flow network.
 ```
 python coaster.py [input-file] --fd_heuristic
 ```
-
-#### IFD Heuristic mode (not currently in use)
-
-Coaster can be run in IFD heuristic mode to find solutions in larger graphs using a reduction to IFD.
-Note that this requires acyclic, non-nested subpath constraints, which is quite limiting.
-
-*TODO: check exactly when ifd heuristic mode works on cyclic graphs.*
-
-```
-python coaster.py [input-file] --ifd_heuristic
-```
-
 
 ### Testing
 
@@ -70,13 +55,6 @@ python create_sc_instances.py basic_instances/ acyclic_sc_graph_instances/ acycl
 ```
 
 *TODO: use a testing module*
-
-### Submodules
-
-The directory `ifd-package` contains code for an inexact flow solver, which is
-used as part of the heuristic version of Coaster. *It contains a very similar
-graph class to Coaster's graph class and should be integrated in as part of the
-overall Coaster system instead of being its own submodule at some point.*
 
 ### Notes
 

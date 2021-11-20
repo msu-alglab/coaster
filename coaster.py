@@ -11,7 +11,6 @@ import argparse
 import signal
 # import cProfile
 # local imports
-import ifd_package.flows.ifd as ifd
 from os import path
 from pathlib import Path
 from os import mkdir
@@ -133,38 +132,6 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
         return set(), elapsed
 
 
-def find_ifd_heuristic_sol(graph, maxtime,):
-    """
-    Find a flow decomposition for instance. NOTE: unsure whether this works for
-    cyclic instances. TODO: add statsfile. TODO: can we use the reduced graph?
-
-    This is the main function for running the IFD heuristic version of Coaster.
-    """
-
-    if maxtime is None:
-        maxtime = -1
-    print("Searching for IFD heuristic solution. Timeout set at {}"
-          "".format(maxtime))
-    try:
-        with timeout(seconds=maxtime):
-            ifd_instance = ifd.InexactFlowInstance(
-                graph.get_mifd_reduction())
-            ifd_instance.solve()
-            ifd_instance.graph.convert_paths()
-            paths = ifd_instance.graph.get_converted_paths()
-            weights = ifd_instance.graph.get_weights()
-            elapsed = time.time() - start
-            cpu_elapsed = time.process_time() - start_cpu
-            print("\n# Solution time was {:.2f} seconds".format(elapsed))
-            return (paths, weights), cpu_elapsed
-    except TimeoutError:
-        print("Timed out after {} seconds".format(maxtime))
-        return set(), maxtime
-    except TypeError:
-        print("TypeError in graph")
-        return set(), 0
-
-
 def find_fd_heuristic_sol(graph, maxtime,):
     """
     Find a flow decomposition for instance.
@@ -232,7 +199,6 @@ if __name__ == "__main__":
                         action='store_true')
     parser.add_argument("--max_k", help="Largest k to consider for any graph",
                         type=int)
-    parser.add_argument('--ifd_heuristic', default=False, action='store_true')
     parser.add_argument('--fd_heuristic', default=False, action='store_true')
 
     args = parser.parse_args()
@@ -254,8 +220,6 @@ if __name__ == "__main__":
     # in some_dir/experiment_info/predicted_exp_type/pred.txt
     if args.fd_heuristic:
         exp_type = "fd_heur"
-    elif args.ifd_heuristic:
-        exp_type = "ifd_heur"
     else:
         exp_type = "fpt"
     pred_path_filename = Path(graph_file).parents[1] /\
@@ -384,9 +348,7 @@ if __name__ == "__main__":
             else:
                 weights = [0]
         else:
-            if args.ifd_heuristic:
-                solution, time_weights = find_ifd_heuristic_sol(graph, maxtime)
-            elif args.fd_heuristic:
+            if args.fd_heuristic:
                 solution, time_weights = find_fd_heuristic_sol(graph, maxtime)
             else:
                 k_start = 1
