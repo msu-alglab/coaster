@@ -415,8 +415,7 @@ class Constr:
 
         return res
 
-    def route_cycles_and_satisfy_subpath_constraints(self, og_graph,
-                                                     stats_out):
+    def route_cycles_and_satisfy_subpath_constraints(self, og_graph):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         # see which weights are fixed
@@ -459,8 +458,7 @@ class Constr:
             if len([x for x in weights if x < 1]) > 0:
                 return False
             res = SolvedConstr(weights, self.instance).\
-                route_cycles_and_satisfy_subpath_constraints(og_graph,
-                                                             stats_out)
+                route_cycles_and_satisfy_subpath_constraints(og_graph)
             if res:
                 return res
 
@@ -575,7 +573,7 @@ class SolvedConstr:
               replacement_pathset)
         return replacement_pathset
 
-    def route_cycles_and_satisfy_subpath_constraints(self, graph, stats_out):
+    def route_cycles_and_satisfy_subpath_constraints(self, graph):
         """Add in the subpath constraints and see if this set of constraints
         has a solution."""
         start_time = time.time()
@@ -587,39 +585,6 @@ class SolvedConstr:
         if len([x for x in self.instance.sccs if len(x) > 1]) == 0:
             print("No cycles to process.")
             sol_pathsets = solution_pathsets_all
-        else:
-            counter = 1
-            for pathset in solution_pathsets_all:
-                this_pathset_sols = [pathset]
-                print("this_pathset_sols is", this_pathset_sols)
-                print("## Trying to route pathset {}, {}, over cycles".format(
-                    counter, pathset))
-                counter += 1
-                cycle_counter = 0
-                for c in [x for x in self.instance.sccs if len(x) > 1]:
-                    cycle_counter += 1
-                    print("Processing cycle number", cycle_counter)
-                    valid_routings = self.instance.cyclic_graph.\
-                        route_cycle(c, self.instance.graph, pathset, stats_out)
-                    if valid_routings:
-                        # this scc is can be covered by this pathest
-                        # incorporate into path
-                        new_sol_pathsets = []
-                        for result in valid_routings:
-                            for p in this_pathset_sols:
-                                replacement_pathset = self.\
-                                    get_replacement_pathset(p, result)
-                                new_sol_pathsets.append(replacement_pathset)
-                                print("There are {} working pathsets".format(
-                                    len(new_sol_pathsets)))
-                        this_pathset_sols = new_sol_pathsets
-                    else:
-                        # this pathset doesn't work, so stop considering it
-                        print("## Pathset doesn't work for cycle")
-                        break
-                else:  # executes if we processed all sccs successfully
-                    print("Successfully processed all cycles.")
-                    sol_pathsets.extend(this_pathset_sols)
 
         if sol_pathsets:
             print("There are {} possible solutions. ".format(len(sol_pathsets))

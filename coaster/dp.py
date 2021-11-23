@@ -12,7 +12,7 @@ import time
 from coaster.flow import Constr, SolvedConstr, PathConf
 
 
-def solve(instance, og_graph, stats_out, silent=True, guessed_weights=None):
+def solve(instance, og_graph, silent=True, guessed_weights=None):
     """
     Find a feasible set of weights consistent with guessed_weights.
 
@@ -112,7 +112,7 @@ def solve(instance, og_graph, stats_out, silent=True, guessed_weights=None):
             # we need to pass in the original graph in order to recover paths
             # print("\nending constr is:", sys)
             solution = sys.route_cycles_and_satisfy_subpath_constraints(
-                og_graph, stats_out)
+                og_graph)
             if solution:
                 return solution
 

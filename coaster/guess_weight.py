@@ -60,7 +60,7 @@ def is_feasible(weights, flow, max_weight):
     return sum(min_weights) <= flow and sum(max_weights) >= flow
 
 
-def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
+def solve(instance, og_graph, silent=True, max_weight_lower=1,
           max_weight_upper=float('inf'), scoring="sink distance"):
     """Solve the provided instance of path-flow decomposition. Write stats
     about this instance to stat_out file object."""
@@ -82,7 +82,7 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
         weights = list(sorted(w for _, w in largest_cut))
         if not silent:
             print("k=size of largest cut, so weights are predetermined.")
-        solutions = solve_dp(instance, og_graph, stats_out, silent,
+        solutions = solve_dp(instance, og_graph, silent,
                              guessed_weights=weights)
         if not silent:
             print("Solutions are:")
@@ -152,7 +152,7 @@ def solve(instance, og_graph, stats_out, silent=True, max_weight_lower=1,
 
                 if not silent:
                     print("Trying weights", weights)
-                sol = solve_dp(instance, og_graph, stats_out,
+                sol = solve_dp(instance, og_graph,
                                silent, guessed_weights=weights)
                 if sol:
                     if not silent:

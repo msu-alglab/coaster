@@ -13,7 +13,6 @@ import signal
 # local imports
 from os import path
 from pathlib import Path
-from os import mkdir
 import sys
 from coaster.guess_weight import solve
 from coaster.parser import read_instances
@@ -97,7 +96,7 @@ def index_range(raw):
     return indices
 
 
-def find_exact_sol(instance, maxtime, max_k, stats_out):
+def find_exact_sol(instance, maxtime, max_k):
     """
     Find an optimal flow decomposition (paths and weights) for instance.
     stats_out is a file for writing stats about this instance.
@@ -116,7 +115,7 @@ def find_exact_sol(instance, maxtime, max_k, stats_out):
                 if max_k:
                     assert instance.k <= max_k
                 print("\n# \tTrying to solve with k = {}".format(instance.k))
-                solution = solve(instance, graph, stats_out, silent=True)
+                solution = solve(instance, graph, silent=True)
                 if bool(solution):
                     break
                 instance.try_larger_k()
@@ -208,13 +207,6 @@ if __name__ == "__main__":
     filenum = graph_file.split(".graph")[0].split("graphs/sc")[1]
     print("filenum is", filenum)
     truth_file = "{}.truth".format(path.splitext(graph_file)[0])
-    stats_file = "stats_files/" + graph_file.split("/")[-1] + "_stats.txt"
-    if not path.isdir("stats_files"):
-        mkdir("stats_files")
-    stats_out = open(stats_file, "w")
-    stats_out.write("filename,graphname,n,m,contracted_n,contracted_m," +
-                    "scc_n,scc_m,num_cycles,size_of_cycles...,routings_" +
-                    "over_cycle...,\n")
     # assume that file structure is some_dir/experiment_info/truth/truthfile,
     # some_dir/experiment_info/graphs/graphfiles, and we want to put the output
     # in some_dir/experiment_info/predicted_exp_type/pred.txt
@@ -300,8 +292,6 @@ if __name__ == "__main__":
                            m_input, k if k else "?"), flush=True)
         # graphname is graphnumber-fileindex in our instances, so it can be
         # used to join output with groundtruth
-        stats_out.write("{},{},{},{},".format(filename, graphname, n_input,
-                                              m_input))
 
         if args.print_contracted:
             print("Original graph is:")
@@ -314,8 +304,6 @@ if __name__ == "__main__":
         reduced, mapping = graph.contracted()
         # reduced is the graph after contractions;
         # mapping enables mapping paths on reduced back to paths in graph
-        stats_out.write("{},{},".format(reduced.num_nodes(),
-                                        reduced.num_edges()))
         if args.print_contracted:
             print("Contracted graph is:")
             reduced.print_out()
@@ -323,11 +311,9 @@ if __name__ == "__main__":
 
         # create a graph with all strongly connected components contracted to
         # single vertices
+        # TODO: REMOVE
         scc_reduced, sccs = reduced.scc()
-        stats_out.write("{},{},{},".format(
-            scc_reduced.num_nodes(), scc_reduced.num_edges(), len(sccs) - 2))
-        for scc in sccs[1:-1]:
-            stats_out.write("{},".format(len(scc)))
+
         if args.print_contracted:
             print("sccs are", sccs)
             print("SCC graph is:")
@@ -359,12 +345,7 @@ if __name__ == "__main__":
 
                 k_cutset = instance.max_edge_cut_size  # this is for reporting
                 solution, time_weights = find_exact_sol(instance, maxtime,
-                                                        max_k, stats_out)
-            if solution:
-                stats_out.write("{}".format(len(solution[0])))
-            else:
-                stats_out.write("{}".format(0))
-
+                                                        max_k)
             # recover the paths in an optimal solution
             if bool(solution):
                 paths, weights = solution
@@ -395,9 +376,7 @@ if __name__ == "__main__":
                             k_improve, k_opt, time_weights,
                             ))
             print("weights\t", *[w for w in weights])
-        stats_out.write("\n")
         print("Finished instance.\n")
-    stats_out.close()
     output.close()
     runtime_output.close()
     # report overall times
