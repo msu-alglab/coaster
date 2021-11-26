@@ -131,7 +131,7 @@ def find_exact_sol(instance, maxtime, max_k):
         return set(), elapsed
 
 
-def find_fd_heuristic_sol(graph, maxtime,):
+def find_fd_heuristic_sol(graph, maxtime, no_br=False):
     """
     Find a flow decomposition for instance.
 
@@ -145,7 +145,9 @@ def find_fd_heuristic_sol(graph, maxtime,):
     try:
         with timeout(seconds=maxtime):
             fd_instance = fd.ExactFlowInstance(graph)
-            fd_instance.solve()
+            # by default, we solve with bridge reweighting. but if no_br=True,
+            # don't use bridge reweighting
+            fd_instance.solve(no_br)
             fd_instance.convert_paths()
             # fd_instance.splice_heuristic()
             paths = fd_instance.paths
@@ -199,6 +201,8 @@ if __name__ == "__main__":
     parser.add_argument("--max_k", help="Largest k to consider for any graph",
                         type=int)
     parser.add_argument('--fd_heuristic', default=False, action='store_true')
+    parser.add_argument('--fd_heuristic_no_br', default=False,
+                        action='store_true')
 
     args = parser.parse_args()
 
@@ -212,6 +216,8 @@ if __name__ == "__main__":
     # in some_dir/experiment_info/predicted_exp_type/pred.txt
     if args.fd_heuristic:
         exp_type = "fd_heur"
+    elif args.fd_heuristic_no_br:
+        exp_type = "fd_heur_no_br"
     else:
         exp_type = "fpt"
     pred_path_filename = Path(graph_file).parents[1] /\
@@ -333,9 +339,13 @@ if __name__ == "__main__":
                 weights = [list(graph.edges())[0][2]]
             else:
                 weights = [0]
+        # non-trivial, so solve
         else:
             if args.fd_heuristic:
                 solution, time_weights = find_fd_heuristic_sol(graph, maxtime)
+            elif args.fd_heuristic_no_br:
+                solution, time_weights = find_fd_heuristic_sol(graph, maxtime,
+                                                               no_br=True)
             else:
                 k_start = 1
                 instance = Instance(scc_reduced, k_start, reduced, sccs)

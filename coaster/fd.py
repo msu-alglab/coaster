@@ -55,14 +55,15 @@ class ExactFlowInstance:
         self.reduced_graph.subpath_demands = []
         self.reduced_graph.check_flow()
 
-    def solve(self):
+    def solve(self, no_br=False):
         """
         Step 1: get rid of overdemanded edges (not implemented).
         Step 2: create FD reduction.
         Step 3: find a path solution.
         """
         self.create_reduced_graph()
-        self.increase_bridge_flows()
+        if not no_br:
+            self.increase_bridge_flows()
         self.reduced_graph.run_greedy_width()
 
     def increase_bridge_flows(self):
@@ -70,19 +71,19 @@ class ExactFlowInstance:
         In order to create better path decompositions, try to route as much
         flow as possible on bridge edges.
         """
-        print("\nIncreasing bridge flows.")
+        # print("\nIncreasing bridge flows.")
         for sc in self.graph.subpath_constraints:
-            print("sc is", sc)
+            # print("sc is", sc)
             arcs = self.graph.convert_nodeseq_to_arcs(sc)
             # see if we can increase the bridge edge
             min_f = self.reduced_graph.arc_info[arcs[0]]["weight"]
-            print("min_f for this sc is", min_f)
+            # print("min_f for this sc is", min_f)
             for arc in arcs:
                 min_f = min(self.reduced_graph.arc_info[arc]["weight"], min_f)
-                print("arc from", self.reduced_graph.arc_info[arc]["start"],
-                      "to",
-                      self.reduced_graph.arc_info[arc]["destin"], "has weight",
-                      self.reduced_graph.arc_info[arc]["weight"])
+                # print("arc from", self.reduced_graph.arc_info[arc]["start"],
+                #       "to",
+                #       self.reduced_graph.arc_info[arc]["destin"], "has  weight",  # noqa
+                #       self.reduced_graph.arc_info[arc]["weight"])
             # change bridge edge flow and arc flows
             sc_arc = self.get_arc_from_sc(sc)
             self.reduced_graph.remove_weight_by_arc_id(-min_f, sc_arc)
